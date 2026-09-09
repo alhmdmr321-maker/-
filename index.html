@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>تعبئة النماذج</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      color: #222;
+    }
+
+    header {
+      background: #ffffff;
+      padding: 18px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .controls {
+      background: white;
+      margin: 15px auto;
+      padding: 15px;
+      width: min(95%, 900px);
+      border-radius: 12px;
+    }
+
+    button,
+    label {
+      display: inline-block;
+      padding: 12px 16px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      background: #222;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover,
+    label:hover {
+      opacity: 0.85;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .workspace {
+      width: min(95%, 900px);
+      margin: auto;
+      overflow: auto;
+      background: white;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    #formArea {
+      position: relative;
+      display: inline-block;
+      line-height: 0;
+    }
+
+    #formImage {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .field {
+      position: absolute;
+      border: 2px dashed #555;
+      background: rgba(255,255,255,0.75);
+      min-width: 80px;
+      min-height: 32px;
+      padding: 3px;
+      line-height: normal;
+    }
+
+    .field input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 16px;
+      text-align: left;
+    }
+
+    .field.selected {
+      border: 2px solid #000;
+    }
+
+    .field .delete {
+      position: absolute;
+      top: -22px;
+      right: -2px;
+      padding: 2px 7px;
+      font-size: 12px;
+      background: #c00;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      line-height: normal;
+    }
+
+    #emptyMessage {
+      padding: 40px;
+      text-align: center;
+      color: #777;
+      line-height: 1.6;
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>تعبئة النماذج</h1>
+</header>
+
+<div class="controls">
+
+  <label>
+    📷 اختيار صورة النموذج
+    <input type="file" id="imageInput" accept="image/*">
+  </label>
+
+  <button id="addField">
+    ＋ إضافة خانة
+  </button>
+
+  <button id="saveImage">
+    💾 حفظ النموذج
+  </button>
+
+  <div class="hint">
+    ارفع صورة النموذج أولاً، ثم اضغط «إضافة خانة» وضعها فوق المكان
+    الذي تريد تعبئته.
+  </div>
+
+</div>
+
+<div class="workspace">
+
+  <div id="formArea">
+
+    <div id="emptyMessage">
+      لم يتم اختيار نموذج بعد.<br>
+      اضغط «اختيار صورة النموذج».
+    </div>
+
+    <img id="formImage" style="display:none;">
+
+  </div>
+
+</div>
+
+
+<script>
+
+const imageInput = document.getElementById("imageInput");
+const formImage = document.getElementById("formImage");
+const formArea = document.getElementById("formArea");
+const addFieldButton = document.getElementById("addField");
+const saveImageButton = document.getElementById("saveImage");
+const emptyMessage = document.getElementById("emptyMessage");
+
+let fields = [];
+let fieldCounter = 0;
+
+
+/* =========================
+   رفع الصورة
+========================= */
+
+imageInput.addEventListener("change", function () {
+
+  const file = this.files[0];
+
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    alert("يرجى اختيار صورة صحيحة.");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function (event) {
+
+    formImage.src = event.target.result;
+    formImage.style.display = "block";
+    emptyMessage.style.display = "none";
+
+    fields.forEach(field => field.remove());
+    fields = [];
+    fieldCounter = 0;
+  };
+
+  reader.readAsDataURL(file);
+});
+
+
+/* =========================
+   إضافة خانة
+========================= */
+
+addFieldButton.addEventListener("click", function () {
+
+  if (!formImage.src) {
+    alert("ارفع صورة النموذج أولاً.");
+    return;
+  }
+
+  createField(40, 40);
+
+});
+
+
+function createField(x, y) {
+
+  fieldCounter++;
+
+  const field = document.createElement("div");
+
+  field.className = "field";
+
+  field.style.left = x + "px";
+  field.style.top = y + "px";
+
+  field.style.width = "180px";
+  field.style.height = "38px";
+
+  const input = document.createElement("input");
+
+  input.type = "text";
+
+  input.placeholder = "اكتب هنا";
+
+  const deleteButton = document.createElement("span");
+
+  deleteButton.className = "delete";
+
+  deleteButton.textContent = "حذف";
+
+  deleteButton.addEventListener("click", function (event) {
+
+    event.stopPropagation();
+
+    field.remove();
+
+    fields = fields.filter(f => f !== field);
+
+  });
+
+  field.appendChild(input);
+  field.appendChild(deleteButton);
+
+  formArea.appendChild(field);
+
+  fields.push(field);
+
+  makeDraggable(field);
+
+}
+
+
+/* =========================
+   تحريك الخانات
+========================= */
+
+function makeDraggable(element) {
+
+  let dragging = false;
+
+  let startX = 0;
+  let startY = 0;
+
+  let startLeft = 0;
+  let startTop = 0;
+
+
+  element.addEventListener("pointerdown", function (event) {
+
+    if (event.target.tagName === "INPUT") return;
+
+    if (event.target.classList.contains("delete")) return;
+
+    dragging = true;
+
+    element.setPointerCapture(event.pointerId);
+
+    startX = event.clientX;
+    startY = event.clientY;
+
+    startLeft = element.offsetLeft;
+    startTop = element.offsetTop;
+
+    element.classList.add("selected");
+
+  });
+
+
+  element.addEventListener("pointermove", function (event) {
+
+    if (!dragging) return;
+
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+
+    let newLeft = startLeft + dx;
+    let newTop = startTop + dy;
+
+    newLeft = Math.max(0, newLeft);
+    newTop = Math.max(0, newTop);
+
+    element.style.left = newLeft + "px";
+    element.style.top = newTop + "px";
+
+  });
+
+
+  element.addEventListener("pointerup", function () {
+
+    dragging = false;
+
+    element.classList.remove("selected");
+
+  });
+
+}
+
+
+/* =========================
+   حفظ الصورة
+========================= */
+
+saveImageButton.addEventListener("click", function () {
+
+  if (!formImage.src) {
+    alert("ارفع صورة النموذج أولاً.");
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+
+  const naturalWidth = formImage.naturalWidth;
+  const naturalHeight = formImage.naturalHeight;
+
+  canvas.width = naturalWidth;
+  canvas.height = naturalHeight;
+
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(
+    formImage,
+    0,
+    0,
+    naturalWidth,
+    naturalHeight
+  );
+
+
+  const scaleX = naturalWidth / formImage.clientWidth;
+  const scaleY = naturalHeight / formImage.clientHeight;
+
+
+  fields.forEach(field => {
+
+    const input = field.querySelector("input");
+
+    if (!input.value) return;
+
+    const x = field.offsetLeft * scaleX;
+    const y = field.offsetTop * scaleY;
+
+    const width = field.offsetWidth * scaleX;
+    const height = field.offsetHeight * scaleY;
+
+    ctx.fillStyle = "white";
+
+    ctx.fillRect(
+      x,
+      y,
+      width,
+      height
+    );
+
+    ctx.fillStyle = "black";
+
+    ctx.font = `${Math.max(14, 16 * scaleX)}px Arial`;
+
+    ctx.textBaseline = "middle";
+
+    ctx.fillText(
+      input.value,
+      x + 5 * scaleX,
+      y + height / 2
+    );
+
+  });
+
+
+  const link = document.createElement("a");
+
+  link.download = "form-filled.png";
+
+  link.href = canvas.toDataURL("image/png");
+
+  link.click();
+
+});
+
+
+</script>
+
+</body>
+</html>
