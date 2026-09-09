@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,1500 +8,611 @@
 
 <style>
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  background: #f1f1f1;
-  font-family: Arial, sans-serif;
-  color: #222;
+    margin: 0;
+    background: #eeeeee;
+    font-family: Arial, sans-serif;
+    direction: rtl;
 }
 
-header {
-  background: white;
-  padding: 16px;
-  text-align: center;
+#topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: white;
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-header h1 {
-  margin: 0;
-  font-size: 23px;
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 15px;
+    cursor: pointer;
 }
 
-.toolbar {
-  width: 96%;
-  max-width: 900px;
-  margin: 12px auto;
-  background: white;
-  padding: 12px;
-  border-radius: 12px;
+#uploadBtn {
+    background: #333;
+    color: white;
 }
 
-button,
-.fileButton {
-  display: inline-block;
-  padding: 12px 16px;
-  margin: 4px;
-  border: none;
-  border-radius: 9px;
-  background: #222;
-  color: white;
-  font-size: 15px;
-  cursor: pointer;
+#saveBtn {
+    background: #16803c;
+    color: white;
 }
 
-.fileButton {
-  background: #222;
+#clearBtn {
+    background: #b3261e;
+    color: white;
 }
 
-input[type="file"] {
-  display: none;
+#zoomIn,
+#zoomOut {
+    background: #ddd;
 }
 
-.instructions {
-  margin-top: 10px;
-  color: #666;
-  line-height: 1.7;
-  font-size: 14px;
+#status {
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    color: #555;
 }
 
-.workspace {
-  width: 96%;
-  max-width: 900px;
-  margin: auto;
-  background: white;
-  padding: 10px;
-  border-radius: 12px;
-  overflow: auto;
+#fileInput {
+    display: none;
 }
 
-#formArea {
-  position: relative;
-  display: inline-block;
-  line-height: 0;
+#workspace {
+    width: 100%;
+    overflow: auto;
+    padding: 15px;
+}
+
+#form {
+    position: relative;
+    margin: auto;
+    width: fit-content;
+    line-height: 0;
 }
 
 #formImage {
-  display: none;
-  max-width: none;
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
 }
 
-#emptyMessage {
-  padding: 50px 20px;
-  text-align: center;
-  color: #777;
-  line-height: 2;
+.fieldInput {
+    position: absolute;
+    border: 1px dashed #777;
+    background: rgba(255,255,255,0.55);
+    outline: none;
+
+    padding: 2px 5px;
+
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    color: #000;
+
+    line-height: 1.2;
+    direction: auto;
+    text-align: left;
+
+    z-index: 10;
 }
 
-/* خانة الكتابة */
-
-.field {
-  position: absolute;
-  z-index: 20;
-  border: 2px solid #1976d2;
-  background: rgba(255,255,255,.94);
-  line-height: normal;
+.fieldInput:focus {
+    border: 1px solid #16803c;
+    background: rgba(255,255,255,0.75);
 }
 
-.field input {
-  width: 100%;
-  height: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 2px 5px;
-  font-family: Arial,sans-serif;
-  font-size: 16px;
-  color: #000;
-  direction: ltr;
-}
-
-.delete {
-  position: absolute;
-  top: -24px;
-  right: 0;
-  padding: 3px 7px;
-  border-radius: 5px;
-  background: #c62828;
-  color: white;
-  font-size: 11px;
-  line-height: normal;
-  cursor: pointer;
-}
-
-/* مربع الاختيار */
-
-.checkbox {
-  position: absolute;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,.55);
-  color: black;
-  font-family: Arial,sans-serif;
-  font-weight: bold;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.message {
-  display: none;
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 7px;
-  background: #eee;
-  font-size: 14px;
-}
-
-.zoom {
-  margin-top: 8px;
+@media (max-width: 600px) {
+    .fieldInput {
+        font-size: 14px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<header>
-<h1>تعبئة النموذج</h1>
-</header>
+<div id="topbar">
 
-<div class="toolbar">
+    <label for="fileInput">
+        <button id="uploadBtn" type="button">
+            📷 اختيار النموذج
+        </button>
+    </label>
 
-<label class="fileButton">
-📷 اختيار صورة النموذج
-<input type="file" id="imageInput" accept="image/*">
-</label>
+    <button id="saveBtn" type="button">
+        💾 حفظ الصورة
+    </button>
 
-<button id="clearButton">
-🗑️ مسح الخانات
-</button>
+    <button id="clearBtn" type="button">
+        🗑 مسح الكتابة
+    </button>
 
-<button id="saveButton">
-💾 حفظ النموذج
-</button>
+    <button id="zoomOut" type="button">
+        −
+    </button>
 
-<div class="instructions">
-<b>طريقة الاستخدام:</b><br>
-اضغط داخل الخانة الفارغة التي تريد تعبئتها.
-إذا كانت خانة مستطيلة سيضع التطبيق الكتابة داخلها تلقائيًا.
-اضغط على مربع اختيار حقيقي لوضع علامة ✓.
-</div>
+    <button id="zoomIn" type="button">
+        +
+    </button>
 
-<div class="zoom">
-<button id="minus">−</button>
-<span id="zoomText">100%</span>
-<button id="plus">+</button>
-</div>
+    <input
+        id="fileInput"
+        type="file"
+        accept="image/*"
+    >
 
-<div id="message" class="message"></div>
-
-</div>
-
-<div class="workspace">
-
-<div id="formArea">
-
-<div id="emptyMessage">
-📄<br>
-اختر صورة النموذج للبدء.
-</div>
-
-<img id="formImage">
+    <div id="status">
+        اضغط فقط داخل الخانة الخضراء التي تريد تعبئتها
+    </div>
 
 </div>
+
+<div id="workspace">
+
+    <div id="form">
+
+        <img
+            id="formImage"
+            alt="النموذج"
+        >
+
+    </div>
 
 </div>
 
 <script>
 
-const imageInput =
-document.getElementById("imageInput");
+const fileInput = document.getElementById("fileInput");
+const formImage = document.getElementById("formImage");
+const form = document.getElementById("form");
+const statusText = document.getElementById("status");
 
-const formImage =
-document.getElementById("formImage");
-
-const formArea =
-document.getElementById("formArea");
-
-const emptyMessage =
-document.getElementById("emptyMessage");
-
-const clearButton =
-document.getElementById("clearButton");
-
-const saveButton =
-document.getElementById("saveButton");
-
-const plus =
-document.getElementById("plus");
-
-const minus =
-document.getElementById("minus");
-
-const zoomText =
-document.getElementById("zoomText");
-
-const message =
-document.getElementById("message");
-
-
+let imageLoaded = false;
 let zoom = 1;
 
 let fields = [];
 
-let canvas = null;
+/*
+    أبعاد الصورة الأصلية:
+    1448 × 2048
 
-let ctx = null;
+    هذه هي الخانات الحقيقية الموجودة
+    في نموذج ORF الذي أرسلته.
+*/
 
-let imageData = null;
+const FIELD_DATA = [
+
+    // الاسم
+    {
+        name: "Nachname",
+        x: 136,
+        y: 614,
+        w: 1174,
+        h: 37
+    },
+
+    // الاسم الأول
+    {
+        name: "Vorname",
+        x: 136,
+        y: 683,
+        w: 830,
+        h: 37
+    },
+
+    // تاريخ الميلاد
+    {
+        name: "Geburtsdatum",
+        x: 1033,
+        y: 682,
+        w: 277,
+        h: 37
+    },
+
+    // الشارع
+    {
+        name: "Strasse",
+        x: 136,
+        y: 810,
+        w: 1174,
+        h: 38
+    },
+
+    // رقم المنزل
+    {
+        name: "Hausnummer",
+        x: 136,
+        y: 880,
+        w: 244,
+        h: 37
+    },
+
+    // Stiege
+    {
+        name: "Stiege",
+        x: 551,
+        y: 880,
+        w: 140,
+        h: 36
+    },
+
+    // Tür
+    {
+        name: "Tur",
+        x: 410,
+        y: 880,
+        w: 108,
+        h: 37
+    },
+
+    // PLZ
+    {
+        name: "PLZ",
+        x: 136,
+        y: 946,
+        w: 142,
+        h: 37
+    },
+
+    // Ort/Gemeinde
+    {
+        name: "Ort",
+        x: 308,
+        y: 947,
+        w: 1002,
+        h: 37
+    },
+
+    // Vorwahl
+    {
+        name: "Vorwahl",
+        x: 136,
+        y: 1017,
+        w: 175,
+        h: 38
+    },
+
+    // Telefonnummer
+    {
+        name: "Telefon",
+        x: 342,
+        y: 1017,
+        w: 554,
+        h: 37
+    },
+
+    // E-Mail
+    {
+        name: "Email",
+        x: 136,
+        y: 1087,
+        w: 1173,
+        h: 37
+    },
+
+    // Beitragsnummer
+    {
+        name: "Beitragsnummer",
+        x: 961,
+        y: 1245,
+        w: 351,
+        h: 40
+    },
+
+    // اسم شركة الهاتف
+    {
+        name: "Gesellschaft",
+        x: 207,
+        y: 1376,
+        w: 1105,
+        h: 37
+    }
+
+];
 
 
-/* =========================
-   الرسائل
-========================= */
+/* تحميل الصورة */
 
-function showMessage(text) {
+fileInput.addEventListener("change", function(event) {
 
-  message.textContent = text;
+    const file = event.target.files[0];
 
-  message.style.display = "block";
+    if (!file) return;
 
-  clearTimeout(window.msgTimer);
+    const reader = new FileReader();
 
-  window.msgTimer =
-    setTimeout(() => {
-      message.style.display = "none";
-    }, 2500);
+    reader.onload = function(e) {
+
+        formImage.onload = function() {
+
+            imageLoaded = true;
+
+            zoom = 1;
+
+            renderFields();
+
+            statusText.textContent =
+                "اضغط داخل إحدى الخانات الخضراء للكتابة";
+
+        };
+
+        formImage.src = e.target.result;
+
+    };
+
+    reader.readAsDataURL(file);
+});
+
+
+/* إظهار الخانات */
+
+function renderFields() {
+
+    document
+        .querySelectorAll(".fieldInput")
+        .forEach(el => el.remove());
+
+    fields = [];
+
+    const naturalWidth = formImage.naturalWidth;
+    const naturalHeight = formImage.naturalHeight;
+
+    /*
+       إذا كانت الصورة هي نفس النموذج
+       نستخدم إحداثياته الأصلية.
+    */
+
+    FIELD_DATA.forEach(data => {
+
+        const input = document.createElement("input");
+
+        input.type = "text";
+
+        input.className = "fieldInput";
+
+        input.dataset.name = data.name;
+
+        input.placeholder = "";
+
+        /*
+           تحويل إحداثيات الصورة الأصلية
+           إلى النسبة المئوية.
+
+           هذا يجعل الخانات تعمل حتى لو
+           تغير حجم الصورة على الهاتف.
+        */
+
+        input.style.left =
+            ((data.x / naturalWidth) * 100) + "%";
+
+        input.style.top =
+            ((data.y / naturalHeight) * 100) + "%";
+
+        input.style.width =
+            ((data.w / naturalWidth) * 100) + "%";
+
+        input.style.height =
+            ((data.h / naturalHeight) * 100) + "%";
+
+        /*
+           حفظ القيمة حتى نستخدمها
+           عند تصدير الصورة.
+        */
+
+        input.addEventListener("input", function() {
+
+            statusText.textContent =
+                "تكتب الآن في خانة: " + data.name;
+
+        });
+
+        form.appendChild(input);
+
+        fields.push({
+            data: data,
+            input: input
+        });
+
+    });
+
 }
 
 
-/* =========================
-   تحميل الصورة
-========================= */
+/*
+   مهم جداً:
 
-imageInput.addEventListener(
-"change",
-function() {
+   لا يوجد هنا أي fallback.
 
-  const file = this.files[0];
+   يعني إذا ضغط المستخدم خارج
+   إحدى الخانات، لن تظهر خانة جديدة.
+*/
 
-  if (!file) return;
 
-  const reader = new FileReader();
+/* التكبير */
 
-  reader.onload = function(e) {
+document.getElementById("zoomIn")
+.addEventListener("click", function() {
 
-    formImage.onload = function() {
+    if (!imageLoaded) return;
 
-      formImage.style.display = "block";
+    zoom += 0.1;
 
-      emptyMessage.style.display = "none";
+    if (zoom > 2) zoom = 2;
 
-      zoom = 1;
+    formImage.style.width =
+        (zoom * 100) + "%";
 
-      updateZoom();
-
-      prepareImage();
-
-      removeFields();
-
-      showMessage(
-        "تم تحميل النموذج. اضغط داخل الخانة التي تريد تعبئتها."
-      );
-    };
-
-    formImage.src = e.target.result;
-
-  };
-
-  reader.readAsDataURL(file);
+    form.style.width =
+        formImage.offsetWidth + "px";
 
 });
 
 
-/* =========================
-   تجهيز الصورة للتحليل
-========================= */
+/* التصغير */
 
-function prepareImage() {
+document.getElementById("zoomOut")
+.addEventListener("click", function() {
 
-  canvas =
-    document.createElement("canvas");
+    if (!imageLoaded) return;
 
-  canvas.width =
-    formImage.naturalWidth;
+    zoom -= 0.1;
 
-  canvas.height =
-    formImage.naturalHeight;
+    if (zoom < 0.5) zoom = 0.5;
 
-  ctx =
-    canvas.getContext(
-      "2d",
-      {willReadFrequently:true}
+    formImage.style.width =
+        (zoom * 100) + "%";
+
+    form.style.width =
+        formImage.offsetWidth + "px";
+
+});
+
+
+/* مسح الكتابة */
+
+document.getElementById("clearBtn")
+.addEventListener("click", function() {
+
+    fields.forEach(field => {
+
+        field.input.value = "";
+
+    });
+
+    statusText.textContent =
+        "تم مسح الكتابة";
+
+});
+
+
+/* حفظ الصورة */
+
+document.getElementById("saveBtn")
+.addEventListener("click", function() {
+
+    if (!imageLoaded) {
+
+        alert("اختار صورة النموذج أولاً");
+
+        return;
+
+    }
+
+    const canvas = document.createElement("canvas");
+
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = formImage.naturalWidth;
+
+    canvas.height = formImage.naturalHeight;
+
+    /*
+       أولاً نرسم النموذج الأصلي
+    */
+
+    ctx.drawImage(
+        formImage,
+        0,
+        0,
+        canvas.width,
+        canvas.height
     );
-
-  ctx.drawImage(
-    formImage,
-    0,
-    0
-  );
-
-  imageData =
-    ctx.getImageData(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-}
-
-
-/* =========================
-   قراءة البكسل
-========================= */
-
-function pixel(x,y) {
-
-  x = Math.round(x);
-  y = Math.round(y);
-
-  if (
-    !imageData ||
-    x < 0 ||
-    y < 0 ||
-    x >= imageData.width ||
-    y >= imageData.height
-  ) {
-    return null;
-  }
-
-  const i =
-    (y * imageData.width + x) * 4;
-
-  return {
-
-    r: imageData.data[i],
-
-    g: imageData.data[i+1],
-
-    b: imageData.data[i+2],
-
-    a: imageData.data[i+3]
-
-  };
-}
-
-
-/* =========================
-   هل البكسل أخضر؟
-========================= */
-
-function green(p) {
-
-  if (!p) return false;
-
-  return (
-    p.g > 100 &&
-    p.g > p.r * 1.08 &&
-    p.g > p.b * 1.03
-  );
-}
-
-
-/* =========================
-   هل البكسل أسود؟
-========================= */
-
-function black(p) {
-
-  if (!p) return false;
-
-  return (
-    p.r < 80 &&
-    p.g < 80 &&
-    p.b < 80
-  );
-}
-
-
-/* =========================
-   قوة الخط الأخضر
-========================= */
-
-function greenHorizontal(
-y,
-x1,
-x2
-) {
-
-  let good = 0;
-  let total = 0;
-
-  for (
-    let x=x1;
-    x<=x2;
-    x+=2
-  ) {
-
-    const p = pixel(x,y);
-
-    if (!p) continue;
-
-    total++;
-
-    if (green(p))
-      good++;
-
-  }
-
-  if (!total) return 0;
-
-  return good / total;
-}
-
-
-function greenVertical(
-x,
-y1,
-y2
-) {
-
-  let good = 0;
-  let total = 0;
-
-  for (
-    let y=y1;
-    y<=y2;
-    y+=2
-  ) {
-
-    const p = pixel(x,y);
-
-    if (!p) continue;
-
-    total++;
-
-    if (green(p))
-      good++;
-
-  }
-
-  if (!total) return 0;
-
-  return good / total;
-}
-
-
-/* =========================
-   البحث عن الخط العلوي
-========================= */
-
-function findTop(x,y) {
-
-  const max = 180;
-
-  for (
-    let d=1;
-    d<=max;
-    d++
-  ) {
-
-    const yy = y-d;
-
-    if (yy < 0) break;
-
-    const score =
-      greenHorizontal(
-        yy,
-        Math.max(0,x-40),
-        Math.min(
-          imageData.width-1,
-          x+40
-        )
-      );
-
-    if (score > .55) {
-
-      return yy;
-    }
-  }
-
-  return null;
-}
-
-
-/* =========================
-   البحث عن الخط السفلي
-========================= */
-
-function findBottom(x,y) {
-
-  const max = 180;
-
-  for (
-    let d=1;
-    d<=max;
-    d++
-  ) {
-
-    const yy = y+d;
-
-    if (
-      yy >= imageData.height
-    ) break;
-
-    const score =
-      greenHorizontal(
-        yy,
-        Math.max(0,x-40),
-        Math.min(
-          imageData.width-1,
-          x+40
-        )
-      );
-
-    if (score > .55) {
-
-      return yy;
-    }
-  }
-
-  return null;
-}
-
-
-/* =========================
-   البحث عن الخط الأيسر
-========================= */
-
-function findLeft(x,y) {
-
-  const max = 350;
-
-  for (
-    let d=1;
-    d<=max;
-    d++
-  ) {
-
-    const xx=x-d;
-
-    if (xx<0) break;
-
-    const score =
-      greenVertical(
-        xx,
-        Math.max(0,y-40),
-        Math.min(
-          imageData.height-1,
-          y+40
-        )
-      );
-
-    if (score>.55) {
-
-      return xx;
-    }
-  }
-
-  return null;
-}
-
-
-/* =========================
-   البحث عن الخط الأيمن
-========================= */
-
-function findRight(x,y) {
-
-  const max = 350;
-
-  for (
-    let d=1;
-    d<=max;
-    d++
-  ) {
-
-    const xx=x+d;
-
-    if (
-      xx>=imageData.width
-    ) break;
-
-    const score =
-      greenVertical(
-        xx,
-        Math.max(0,y-40),
-        Math.min(
-          imageData.height-1,
-          y+40
-        )
-      );
-
-    if (score>.55) {
-
-      return xx;
-    }
-  }
-
-  return null;
-}
-
-
-/* =========================
-   اكتشاف الخانة
-========================= */
-
-function detectField(x,y) {
-
-  if (!imageData)
-    return null;
-
-
-  const top =
-    findTop(x,y);
-
-  const bottom =
-    findBottom(x,y);
-
-  const left =
-    findLeft(x,y);
-
-  const right =
-    findRight(x,y);
-
-
-  if (
-    top === null ||
-    bottom === null ||
-    left === null ||
-    right === null
-  ) {
-
-    return null;
-  }
-
-
-  const width =
-    right-left;
-
-  const height =
-    bottom-top;
-
-
-  /*
-    الخانات المقبولة فقط
-  */
-
-  if (
-    width < 35 ||
-    height < 15
-  ) {
-
-    return null;
-  }
-
-
-  /*
-    منع التقاط إطار الصفحة الكبير
-  */
-
-  if (
-    width >
-    imageData.width * .90
-  ) {
-
-    return null;
-  }
-
-
-  if (
-    height >
-    imageData.height * .35
-  ) {
-
-    return null;
-  }
-
-
-  /*
-    منع الخانات البعيدة جدًا
-  */
-
-  if (
-    x-left > 180 ||
-    right-x > 180 ||
-    y-top > 120 ||
-    bottom-y > 120
-  ) {
-
-    return null;
-  }
-
-
-  return {
-
-    x:left+2,
-
-    y:top+2,
-
-    width:width-4,
-
-    height:height-4
-
-  };
-
-}
-
-
-/* =========================
-   اكتشاف مربع الاختيار
-========================= */
-
-function detectCheckbox(x,y) {
-
-  /*
-    نبحث عن مربع صغير فقط
-  */
-
-  for (
-    let size=16;
-    size<=38;
-    size+=2
-  ) {
-
-    const half =
-      size/2;
-
-
-    const x1 =
-      Math.round(x-half);
-
-    const y1 =
-      Math.round(y-half);
-
-    const x2 =
-      Math.round(x+half);
-
-    const y2 =
-      Math.round(y+half);
-
-
-    let top=0;
-    let bottom=0;
-    let left=0;
-    let right=0;
-
-
-    for (
-      let i=x1;
-      i<=x2;
-      i++
-    ) {
-
-      if (
-        black(pixel(i,y1))
-      )
-        top++;
-
-      if (
-        black(pixel(i,y2))
-      )
-        bottom++;
-
-    }
-
-
-    for (
-      let i=y1;
-      i<=y2;
-      i++
-    ) {
-
-      if (
-        black(pixel(x1,i))
-      )
-        left++;
-
-      if (
-        black(pixel(x2,i))
-      )
-        right++;
-
-    }
 
 
     /*
-      يجب أن تكون هناك
-      أربعة أضلاع للمربع
+       ثم نرسم الكتابة فقط.
+       أزرار التطبيق والخانات الشفافة
+       لن تدخل بالصورة النهائية.
     */
 
-    const threshold =
-      size * .45;
+    fields.forEach(field => {
 
+        const value =
+            field.input.value.trim();
 
-    if (
-      top > threshold &&
-      bottom > threshold &&
-      left > threshold &&
-      right > threshold
-    ) {
+        if (!value) return;
 
-      return {
+        const d = field.data;
 
-        x:x1,
-
-        y:y1,
-
-        size:size
-
-      };
-
-    }
-
-  }
-
-
-  return null;
-}
-
-
-/* =========================
-   الضغط على الصورة
-========================= */
-
-formImage.addEventListener(
-"pointerdown",
-function(event) {
-
-  if (!imageData)
-    return;
-
-
-  /*
-    منع الضغط من الانتقال
-  */
-
-  event.preventDefault();
-
-
-  const rect =
-    formImage.getBoundingClientRect();
-
-
-  const scaleX =
-    formImage.naturalWidth /
-    rect.width;
-
-
-  const scaleY =
-    formImage.naturalHeight /
-    rect.height;
-
-
-  const x =
-    (event.clientX-rect.left)
-    * scaleX;
-
-
-  const y =
-    (event.clientY-rect.top)
-    * scaleY;
-
-
-  /*
-    أولاً مربع اختيار
-  */
-
-  const checkbox =
-    detectCheckbox(x,y);
-
-
-  if (checkbox) {
-
-    addCheckbox(checkbox);
-
-    return;
-  }
-
-
-  /*
-    ثانيًا خانة نص
-  */
-
-  const field =
-    detectField(x,y);
-
-
-  if (field) {
-
-    addTextField(field);
-
-    return;
-  }
-
-
-  /*
-    لا يوجد شيء
-    لا نفعل أي شيء
-  */
-
-});
-
-
-/* =========================
-   إضافة خانة كتابة
-========================= */
-
-function addTextField(rectangle) {
-
-  /*
-    منع تكرار نفس الخانة
-  */
-
-  const duplicate =
-    fields.find(
-      f =>
-        f.type==="text" &&
-        Math.abs(
-          f.x-rectangle.x
-        ) < 8 &&
-        Math.abs(
-          f.y-rectangle.y
-        ) < 8
-    );
-
-
-  if (duplicate) {
-
-    const input =
-      duplicate.element
-      .querySelector("input");
-
-    input.focus();
-
-    return;
-  }
-
-
-  const div =
-    document.createElement("div");
-
-  div.className =
-    "field";
-
-
-  const input =
-    document.createElement("input");
-
-  input.type="text";
-
-  input.autocomplete="off";
-
-  input.spellcheck=false;
-
-
-  const del =
-    document.createElement("span");
-
-  del.className="delete";
-
-  del.textContent="حذف";
-
-
-  del.addEventListener(
-    "pointerdown",
-    function(e) {
-
-      e.stopPropagation();
-
-      div.remove();
-
-      fields =
-        fields.filter(
-          f => f.element!==div
-        );
-
-    }
-  );
-
-
-  div.appendChild(input);
-
-  div.appendChild(del);
-
-  formArea.appendChild(div);
-
-
-  const item = {
-
-    type:"text",
-
-    element:div,
-
-    x:rectangle.x,
-
-    y:rectangle.y,
-
-    width:rectangle.width,
-
-    height:rectangle.height
-
-  };
-
-
-  fields.push(item);
-
-
-  positionField(item);
-
-
-  input.focus();
-
-}
-
-
-/* =========================
-   إضافة مربع اختيار
-========================= */
-
-function addCheckbox(box) {
-
-  /*
-    منع تكرار نفس المربع
-  */
-
-  const duplicate =
-    fields.find(
-      f =>
-        f.type==="checkbox" &&
-        Math.abs(
-          f.x-box.x
-        ) < 10 &&
-        Math.abs(
-          f.y-box.y
-        ) < 10
-    );
-
-
-  if (duplicate) {
-
-    toggleCheckbox(
-      duplicate
-    );
-
-    return;
-  }
-
-
-  const div =
-    document.createElement("div");
-
-  div.className =
-    "checkbox";
-
-  div.textContent="✓";
-
-
-  formArea.appendChild(div);
-
-
-  const item = {
-
-    type:"checkbox",
-
-    element:div,
-
-    x:box.x,
-
-    y:box.y,
-
-    width:box.size,
-
-    height:box.size,
-
-    checked:true
-
-  };
-
-
-  fields.push(item);
-
-
-  positionField(item);
-
-
-  div.addEventListener(
-    "pointerdown",
-    function(e) {
-
-      e.stopPropagation();
-
-      toggleCheckbox(item);
-
-    }
-  );
-
-}
-
-
-/* =========================
-   تشغيل / إلغاء الصح
-========================= */
-
-function toggleCheckbox(item) {
-
-  item.checked =
-    !item.checked;
-
-  item.element.textContent =
-    item.checked ? "✓" : "";
-
-}
-
-
-/* =========================
-   تحديد مكان العنصر
-========================= */
-
-function positionField(item) {
-
-  const scale =
-    formImage.clientWidth /
-    formImage.naturalWidth;
-
-
-  item.element.style.left =
-    (item.x*scale)+"px";
-
-
-  item.element.style.top =
-    (item.y*scale)+"px";
-
-
-  item.element.style.width =
-    (item.width*scale)+"px";
-
-
-  item.element.style.height =
-    (item.height*scale)+"px";
-
-
-  if (
-    item.type==="checkbox"
-  ) {
-
-    item.element.style.fontSize =
-      Math.max(
-        14,
-        item.height*scale*.75
-      )+"px";
-
-  }
-
-}
-
-
-/* =========================
-   التكبير
-========================= */
-
-function updateZoom() {
-
-  const width =
-    formImage.naturalWidth *
-    zoom;
-
-
-  formImage.style.width =
-    width+"px";
-
-
-  zoomText.textContent =
-    Math.round(zoom*100)+"%";
-
-
-  fields.forEach(
-    positionField
-  );
-
-}
-
-
-plus.addEventListener(
-"click",
-function() {
-
-  zoom =
-    Math.min(
-      2.5,
-      zoom+.1
-    );
-
-  updateZoom();
-
-});
-
-
-minus.addEventListener(
-"click",
-function() {
-
-  zoom =
-    Math.max(
-      .5,
-      zoom-.1
-    );
-
-  updateZoom();
-
-});
-
-
-/* =========================
-   مسح الخانات
-========================= */
-
-function removeFields() {
-
-  fields.forEach(
-    f => {
-
-      if (
-        f.element
-      )
-        f.element.remove();
-
-    }
-  );
-
-  fields=[];
-}
-
-
-clearButton.addEventListener(
-"click",
-function() {
-
-  removeFields();
-
-  showMessage(
-    "تم مسح جميع الخانات."
-  );
-
-});
-
-
-/* =========================
-   إعادة ترتيب الخانات
-========================= */
-
-window.addEventListener(
-"resize",
-function() {
-
-  fields.forEach(
-    positionField
-  );
-
-});
-
-
-/* =========================
-   حفظ النموذج
-========================= */
-
-saveButton.addEventListener(
-"click",
-function() {
-
-  if (
-    !formImage.src ||
-    !formImage.naturalWidth
-  ) {
-
-    showMessage(
-      "اختر صورة النموذج أولاً."
-    );
-
-    return;
-  }
-
-
-  const output =
-    document.createElement("canvas");
-
-
-  output.width =
-    formImage.naturalWidth;
-
-  output.height =
-    formImage.naturalHeight;
-
-
-  const outputCtx =
-    output.getContext("2d");
-
-
-  /*
-    الصورة الأصلية
-  */
-
-  outputCtx.drawImage(
-    formImage,
-    0,
-    0,
-    output.width,
-    output.height
-  );
-
-
-  /*
-    العناصر
-  */
-
-  fields.forEach(
-    function(item) {
-
-
-      if (
-        item.type==="checkbox"
-      ) {
-
-        if (
-          !item.checked
-        )
-          return;
-
-
-        outputCtx.fillStyle =
-          "#000";
-
-
-        outputCtx.font =
-          Math.max(
+        let fontSize = Math.max(
             16,
-            item.height*.8
-          )+"px Arial";
-
-
-        outputCtx.textAlign =
-          "center";
-
-
-        outputCtx.textBaseline =
-          "middle";
-
-
-        outputCtx.fillText(
-          "✓",
-
-          item.x+
-          item.width/2,
-
-          item.y+
-          item.height/2
+            Math.floor(d.h * 0.65)
         );
 
+        ctx.font =
+            fontSize + "px Arial";
 
-        return;
+        ctx.fillStyle = "#000";
 
-      }
+        ctx.textBaseline = "middle";
 
+        /*
+           دعم بسيط للنص العربي
+        */
 
-      const input =
-        item.element
-        .querySelector("input");
+        const arabic =
+            /[\u0600-\u06FF]/.test(value);
 
+        if (arabic) {
 
-      if (
-        !input ||
-        !input.value.trim()
-      )
-        return;
+            ctx.direction = "rtl";
 
+            ctx.textAlign = "right";
 
-      /*
-        تغطية مكان الكتابة
-      */
+            ctx.fillText(
+                value,
+                d.x + d.w - 5,
+                d.y + d.h / 2
+            );
 
-      outputCtx.fillStyle =
-        "white";
+        } else {
 
+            ctx.direction = "ltr";
 
-      outputCtx.fillRect(
-        item.x,
-        item.y,
-        item.width,
-        item.height
-      );
+            ctx.textAlign = "left";
 
+            ctx.fillText(
+                value,
+                d.x + 5,
+                d.y + d.h / 2
+            );
 
-      /*
-        الكتابة
-      */
+        }
 
-      outputCtx.fillStyle =
-        "#000";
-
-
-      outputCtx.font =
-        Math.max(
-          12,
-          item.height*.55
-        )+"px Arial";
+    });
 
 
-      outputCtx.textAlign =
-        "left";
+    /*
+       تنزيل الصورة النهائية
+    */
+
+    const link =
+        document.createElement("a");
+
+    link.download =
+        "ORF-Antrag-ausgefuellt.png";
+
+    link.href =
+        canvas.toDataURL("image/png");
+
+    link.click();
 
 
-      outputCtx.textBaseline =
-        "middle";
-
-
-      outputCtx.fillText(
-        input.value,
-
-        item.x+5,
-
-        item.y+
-        item.height/2
-      );
-
-    }
-  );
-
-
-  /*
-    إنشاء الملف
-  */
-
-  const link =
-    document.createElement("a");
-
-
-  link.download =
-    "formular-ausgefuellt.png";
-
-
-  link.href =
-    output.toDataURL(
-      "image/png"
-    );
-
-
-  link.click();
-
-
-  showMessage(
-    "تم حفظ النموذج."
-  );
+    statusText.textContent =
+        "تم حفظ النموذج بنجاح ✅";
 
 });
 
