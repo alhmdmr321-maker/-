@@ -1,528 +1,377 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>تعبئة النماذج</title>
+<title>تعبئة النموذج</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      background: #f1f1f1;
-      color: #222;
-      font-family: Arial, sans-serif;
-    }
+body {
+  margin: 0;
+  background: #f1f1f1;
+  font-family: Arial, sans-serif;
+  color: #222;
+}
 
-    header {
-      background: white;
-      padding: 16px;
-      text-align: center;
-      border-bottom: 1px solid #ddd;
-    }
+header {
+  background: white;
+  padding: 16px;
+  text-align: center;
+}
 
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-    }
+header h1 {
+  margin: 0;
+  font-size: 23px;
+}
 
-    .toolbar {
-      width: min(96%, 900px);
-      margin: 12px auto;
-      background: white;
-      padding: 12px;
-      border-radius: 12px;
-    }
+.toolbar {
+  width: 96%;
+  max-width: 900px;
+  margin: 12px auto;
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+}
 
-    .toolbar button,
-    .toolbar label {
-      display: inline-block;
-      border: 0;
-      border-radius: 9px;
-      padding: 12px 16px;
-      margin: 4px;
-      background: #222;
-      color: white;
-      font-size: 15px;
-      cursor: pointer;
-    }
+button,
+.fileButton {
+  display: inline-block;
+  padding: 12px 16px;
+  margin: 4px;
+  border: none;
+  border-radius: 9px;
+  background: #222;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
 
-    .toolbar label {
-      background: #333;
-    }
+.fileButton {
+  background: #222;
+}
 
-    input[type="file"] {
-      display: none;
-    }
+input[type="file"] {
+  display: none;
+}
 
-    .instructions {
-      margin-top: 8px;
-      font-size: 14px;
-      line-height: 1.7;
-      color: #666;
-    }
+.instructions {
+  margin-top: 10px;
+  color: #666;
+  line-height: 1.7;
+  font-size: 14px;
+}
 
-    .workspace {
-      width: min(96%, 900px);
-      margin: auto;
-      background: white;
-      padding: 10px;
-      border-radius: 12px;
-      overflow: auto;
-    }
+.workspace {
+  width: 96%;
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  overflow: auto;
+}
 
-    #formArea {
-      position: relative;
-      display: inline-block;
-      line-height: 0;
-      touch-action: manipulation;
-    }
+#formArea {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
 
-    #formImage {
-      display: none;
-      width: auto;
-      max-width: 100%;
-      height: auto;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
+#formImage {
+  display: none;
+  max-width: none;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
 
-    #emptyMessage {
-      padding: 45px 20px;
-      text-align: center;
-      color: #777;
-      line-height: 1.8;
-    }
+#emptyMessage {
+  padding: 50px 20px;
+  text-align: center;
+  color: #777;
+  line-height: 2;
+}
 
-    .field {
-      position: absolute;
-      border: 2px solid #1976d2;
-      background: rgba(255,255,255,0.88);
-      z-index: 10;
-      line-height: normal;
-      min-width: 25px;
-      min-height: 25px;
-    }
+/* خانة الكتابة */
 
-    .field input {
-      display: block;
-      width: 100%;
-      height: 100%;
-      min-width: 25px;
-      min-height: 25px;
-      padding: 2px 5px;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: #000;
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-      text-align: left;
-      direction: ltr;
-    }
+.field {
+  position: absolute;
+  z-index: 20;
+  border: 2px solid #1976d2;
+  background: rgba(255,255,255,.94);
+  line-height: normal;
+}
 
-    .field textarea {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border: 0;
-      outline: 0;
-      resize: none;
-      background: transparent;
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-      color: #000;
-    }
+.field input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 2px 5px;
+  font-family: Arial,sans-serif;
+  font-size: 16px;
+  color: #000;
+  direction: ltr;
+}
 
-    .field .delete {
-      position: absolute;
-      top: -24px;
-      right: -2px;
-      background: #c62828;
-      color: white;
-      border-radius: 5px;
-      padding: 3px 7px;
-      font-size: 11px;
-      line-height: normal;
-      cursor: pointer;
-    }
+.delete {
+  position: absolute;
+  top: -24px;
+  right: 0;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #c62828;
+  color: white;
+  font-size: 11px;
+  line-height: normal;
+  cursor: pointer;
+}
 
-    .check-field {
-      position: absolute;
-      z-index: 11;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,0.85);
-      border: 2px solid #1976d2;
-      color: #000;
-      font-size: 24px;
-      line-height: 1;
-      cursor: pointer;
-    }
+/* مربع الاختيار */
 
-    .message {
-      display: none;
-      margin-top: 10px;
-      padding: 9px;
-      border-radius: 7px;
-      background: #eee;
-      font-size: 14px;
-    }
+.checkbox {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.55);
+  color: black;
+  font-family: Arial,sans-serif;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+}
 
-    .zoom-row {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      margin-top: 8px;
-    }
+.message {
+  display: none;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 7px;
+  background: #eee;
+  font-size: 14px;
+}
 
-    .zoom-row button {
-      padding: 8px 12px;
-      margin: 0;
-    }
-
-    #zoomValue {
-      font-size: 14px;
-      color: #555;
-    }
-  </style>
+.zoom {
+  margin-top: 8px;
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <h1>تعبئة النموذج</h1>
+<h1>تعبئة النموذج</h1>
 </header>
 
 <div class="toolbar">
 
-  <label>
-    📷 اختيار صورة النموذج
-    <input type="file" id="imageInput" accept="image/*">
-  </label>
+<label class="fileButton">
+📷 اختيار صورة النموذج
+<input type="file" id="imageInput" accept="image/*">
+</label>
 
-  <button type="button" id="clearFields">
-    🗑️ مسح الخانات
-  </button>
+<button id="clearButton">
+🗑️ مسح الخانات
+</button>
 
-  <button type="button" id="saveImage">
-    💾 حفظ النموذج
-  </button>
+<button id="saveButton">
+💾 حفظ النموذج
+</button>
 
-  <div class="instructions">
-    <b>طريقة الاستخدام:</b><br>
-    ارفع صورة النموذج، ثم اضغط مباشرة داخل الفراغ الذي تريد تعبئته.
-    سيحاول التطبيق تحديد الخانة الموجودة في الصورة ووضع الكتابة داخلها.
-  </div>
+<div class="instructions">
+<b>طريقة الاستخدام:</b><br>
+اضغط داخل الخانة الفارغة التي تريد تعبئتها.
+إذا كانت خانة مستطيلة سيضع التطبيق الكتابة داخلها تلقائيًا.
+اضغط على مربع اختيار حقيقي لوضع علامة ✓.
+</div>
 
-  <div class="zoom-row">
-    <button type="button" id="zoomOut">−</button>
-    <span id="zoomValue">100%</span>
-    <button type="button" id="zoomIn">+</button>
-  </div>
+<div class="zoom">
+<button id="minus">−</button>
+<span id="zoomText">100%</span>
+<button id="plus">+</button>
+</div>
 
-  <div id="message" class="message"></div>
+<div id="message" class="message"></div>
 
 </div>
 
 <div class="workspace">
 
-  <div id="formArea">
+<div id="formArea">
 
-    <div id="emptyMessage">
-      📄<br>
-      لم يتم اختيار صورة بعد.<br>
-      اضغط «اختيار صورة النموذج».
-    </div>
+<div id="emptyMessage">
+📄<br>
+اختر صورة النموذج للبدء.
+</div>
 
-    <img id="formImage" alt="صورة النموذج">
-
-  </div>
+<img id="formImage">
 
 </div>
 
+</div>
 
 <script>
 
-const imageInput = document.getElementById("imageInput");
-const formImage = document.getElementById("formImage");
-const formArea = document.getElementById("formArea");
-const emptyMessage = document.getElementById("emptyMessage");
-const saveImageButton = document.getElementById("saveImage");
-const clearFieldsButton = document.getElementById("clearFields");
-const messageBox = document.getElementById("message");
-const zoomIn = document.getElementById("zoomIn");
-const zoomOut = document.getElementById("zoomOut");
-const zoomValue = document.getElementById("zoomValue");
+const imageInput =
+document.getElementById("imageInput");
 
-let fields = [];
+const formImage =
+document.getElementById("formImage");
+
+const formArea =
+document.getElementById("formArea");
+
+const emptyMessage =
+document.getElementById("emptyMessage");
+
+const clearButton =
+document.getElementById("clearButton");
+
+const saveButton =
+document.getElementById("saveButton");
+
+const plus =
+document.getElementById("plus");
+
+const minus =
+document.getElementById("minus");
+
+const zoomText =
+document.getElementById("zoomText");
+
+const message =
+document.getElementById("message");
+
+
 let zoom = 1;
 
+let fields = [];
 
-/* =========================================
-   رسالة
-========================================= */
+let canvas = null;
+
+let ctx = null;
+
+let imageData = null;
+
+
+/* =========================
+   الرسائل
+========================= */
 
 function showMessage(text) {
 
-  messageBox.textContent = text;
-  messageBox.style.display = "block";
+  message.textContent = text;
 
-  clearTimeout(showMessage.timer);
+  message.style.display = "block";
 
-  showMessage.timer = setTimeout(function () {
-    messageBox.style.display = "none";
-  }, 2500);
+  clearTimeout(window.msgTimer);
+
+  window.msgTimer =
+    setTimeout(() => {
+      message.style.display = "none";
+    }, 2500);
 }
 
 
-/* =========================================
+/* =========================
    تحميل الصورة
-========================================= */
+========================= */
 
-imageInput.addEventListener("change", function () {
+imageInput.addEventListener(
+"change",
+function() {
 
   const file = this.files[0];
 
   if (!file) return;
 
-  if (!file.type.startsWith("image/")) {
-    showMessage("الملف المختار ليس صورة.");
-    return;
-  }
-
   const reader = new FileReader();
 
-  reader.onload = function (event) {
+  reader.onload = function(e) {
 
-    formImage.src = event.target.result;
-
-    formImage.onload = function () {
+    formImage.onload = function() {
 
       formImage.style.display = "block";
+
       emptyMessage.style.display = "none";
 
-      removeAllFields();
-
       zoom = 1;
+
       updateZoom();
 
+      prepareImage();
+
+      removeFields();
+
       showMessage(
-        "تم تحميل النموذج. اضغط الآن داخل أي خانة فارغة."
+        "تم تحميل النموذج. اضغط داخل الخانة التي تريد تعبئتها."
       );
     };
+
+    formImage.src = e.target.result;
 
   };
 
   reader.readAsDataURL(file);
-});
-
-
-/* =========================================
-   التكبير والتصغير
-========================================= */
-
-function updateZoom() {
-
-  zoom = Math.max(0.5, Math.min(2.5, zoom));
-
-  formImage.style.width =
-    (formImage.naturalWidth * zoom) + "px";
-
-  zoomValue.textContent =
-    Math.round(zoom * 100) + "%";
-}
-
-
-zoomIn.addEventListener("click", function () {
-
-  zoom += 0.1;
-
-  updateZoom();
 
 });
 
 
-zoomOut.addEventListener("click", function () {
+/* =========================
+   تجهيز الصورة للتحليل
+========================= */
 
-  zoom -= 0.1;
+function prepareImage() {
 
-  updateZoom();
+  canvas =
+    document.createElement("canvas");
 
-});
+  canvas.width =
+    formImage.naturalWidth;
 
+  canvas.height =
+    formImage.naturalHeight;
 
-/* =========================================
-   الضغط على الصورة
-========================================= */
-
-formImage.addEventListener("pointerdown", function (event) {
-
-  if (!formImage.src) return;
-
-  /*
-    إحداثيات الضغط على الصورة المعروضة
-  */
-
-  const rect = formImage.getBoundingClientRect();
-
-  const displayX = event.clientX - rect.left;
-  const displayY = event.clientY - rect.top;
-
-  /*
-    تحويلها إلى إحداثيات الصورة الأصلية
-  */
-
-  const scaleX =
-    formImage.naturalWidth / rect.width;
-
-  const scaleY =
-    formImage.naturalHeight / rect.height;
-
-  const x =
-    displayX * scaleX;
-
-  const y =
-    displayY * scaleY;
-
-
-  /*
-    أولاً نبحث عن مربع اختيار
-  */
-
-  const checkbox = detectCheckbox(x, y);
-
-  if (checkbox) {
-
-    createCheckbox(
-      checkbox.x,
-      checkbox.y,
-      checkbox.size
+  ctx =
+    canvas.getContext(
+      "2d",
+      {willReadFrequently:true}
     );
 
-    return;
-  }
-
-
-  /*
-    بعدها نبحث عن الخانة المستطيلة
-  */
-
-  const rectangle =
-    detectFieldRectangle(x, y);
-
-  if (rectangle) {
-
-    createTextField(rectangle);
-
-    return;
-  }
-
-
-  /*
-    إذا لم نستطع اكتشاف المستطيل
-  */
-
-  createFallbackField(x, y);
-
-});
-
-
-/* =========================================
-   قراءة لون الخط الأخضر
-========================================= */
-
-function isGreenPixel(r, g, b) {
-
-  return (
-    g > 90 &&
-    g > r * 1.12 &&
-    g > b * 1.05
-  );
-}
-
-
-/* =========================================
-   قراءة اللون الأسود
-========================================= */
-
-function isDarkPixel(r, g, b) {
-
-  return (
-    r < 90 &&
-    g < 90 &&
-    b < 90
-  );
-}
-
-
-/* =========================================
-   الحصول على بيانات الصورة
-========================================= */
-
-let imageCanvas = null;
-let imageContext = null;
-let imageData = null;
-
-
-/*
-  تجهيز نسخة صغيرة/كاملة من الصورة للتحليل
-*/
-
-function prepareImageAnalysis() {
-
-  if (!formImage.naturalWidth) return;
-
-  imageCanvas = document.createElement("canvas");
-
-  imageCanvas.width = formImage.naturalWidth;
-  imageCanvas.height = formImage.naturalHeight;
-
-  imageContext = imageCanvas.getContext("2d", {
-    willReadFrequently: true
-  });
-
-  imageContext.drawImage(
+  ctx.drawImage(
     formImage,
     0,
     0
   );
 
   imageData =
-    imageContext.getImageData(
+    ctx.getImageData(
       0,
       0,
-      imageCanvas.width,
-      imageCanvas.height
+      canvas.width,
+      canvas.height
     );
-
 }
 
 
-formImage.addEventListener("load", function () {
+/* =========================
+   قراءة البكسل
+========================= */
 
-  prepareImageAnalysis();
-
-});
-
-
-/* =========================================
-   فحص نقطة
-========================================= */
-
-function pixelAt(x, y) {
-
-  if (!imageData) return null;
+function pixel(x,y) {
 
   x = Math.round(x);
   y = Math.round(y);
 
   if (
+    !imageData ||
     x < 0 ||
     y < 0 ||
     x >= imageData.width ||
@@ -535,764 +384,681 @@ function pixelAt(x, y) {
     (y * imageData.width + x) * 4;
 
   return {
+
     r: imageData.data[i],
-    g: imageData.data[i + 1],
-    b: imageData.data[i + 2]
+
+    g: imageData.data[i+1],
+
+    b: imageData.data[i+2],
+
+    a: imageData.data[i+3]
+
   };
 }
 
 
-/* =========================================
-   حساب نسبة الخط الأخضر في خط أفقي
-========================================= */
+/* =========================
+   هل البكسل أخضر؟
+========================= */
 
-function horizontalGreenScore(
-  y,
-  x1,
-  x2
+function green(p) {
+
+  if (!p) return false;
+
+  return (
+    p.g > 100 &&
+    p.g > p.r * 1.08 &&
+    p.g > p.b * 1.03
+  );
+}
+
+
+/* =========================
+   هل البكسل أسود؟
+========================= */
+
+function black(p) {
+
+  if (!p) return false;
+
+  return (
+    p.r < 80 &&
+    p.g < 80 &&
+    p.b < 80
+  );
+}
+
+
+/* =========================
+   قوة الخط الأخضر
+========================= */
+
+function greenHorizontal(
+y,
+x1,
+x2
 ) {
 
-  let count = 0;
+  let good = 0;
   let total = 0;
 
   for (
-    let x = x1;
-    x <= x2;
-    x += 2
+    let x=x1;
+    x<=x2;
+    x+=2
   ) {
 
-    const p = pixelAt(x, y);
+    const p = pixel(x,y);
 
     if (!p) continue;
 
     total++;
 
-    if (
-      isGreenPixel(
-        p.r,
-        p.g,
-        p.b
-      )
-    ) {
-      count++;
-    }
+    if (green(p))
+      good++;
+
   }
 
   if (!total) return 0;
 
-  return count / total;
+  return good / total;
 }
 
 
-/* =========================================
-   حساب نسبة الخط الأخضر عمودي
-========================================= */
-
-function verticalGreenScore(
-  x,
-  y1,
-  y2
+function greenVertical(
+x,
+y1,
+y2
 ) {
 
-  let count = 0;
+  let good = 0;
   let total = 0;
 
   for (
-    let y = y1;
-    y <= y2;
-    y += 2
+    let y=y1;
+    y<=y2;
+    y+=2
   ) {
 
-    const p = pixelAt(x, y);
+    const p = pixel(x,y);
 
     if (!p) continue;
 
     total++;
 
-    if (
-      isGreenPixel(
-        p.r,
-        p.g,
-        p.b
-      )
-    ) {
-      count++;
-    }
+    if (green(p))
+      good++;
+
   }
 
   if (!total) return 0;
 
-  return count / total;
+  return good / total;
 }
 
 
-/* =========================================
-   إيجاد أقرب خط أفقي أخضر
-========================================= */
+/* =========================
+   البحث عن الخط العلوي
+========================= */
 
-function findHorizontalLine(
-  x,
-  y,
-  direction
-) {
+function findTop(x,y) {
 
-  const maxDistance = 350;
+  const max = 180;
 
   for (
-    let d = 0;
-    d <= maxDistance;
+    let d=1;
+    d<=max;
     d++
   ) {
 
-    const yy =
-      y + d * direction;
+    const yy = y-d;
 
-    if (
-      yy < 0 ||
-      yy >= imageData.height
-    ) {
-      break;
-    }
-
-
-    /*
-      نبحث حول نقطة الضغط
-    */
-
-    const localWidth = 80;
-
-    const x1 =
-      Math.max(
-        0,
-        x - localWidth
-      );
-
-    const x2 =
-      Math.min(
-        imageData.width - 1,
-        x + localWidth
-      );
-
+    if (yy < 0) break;
 
     const score =
-      horizontalGreenScore(
+      greenHorizontal(
         yy,
-        x1,
-        x2
+        Math.max(0,x-40),
+        Math.min(
+          imageData.width-1,
+          x+40
+        )
       );
 
+    if (score > .55) {
 
-    if (score > 0.42) {
-
-      /*
-        نوسّع الخط يمينًا ويسارًا
-      */
-
-      let left = x;
-
-      let right = x;
-
-
-      for (
-        let xx = x;
-        xx >= 0;
-        xx--
-      ) {
-
-        const p =
-          pixelAt(xx, yy);
-
-        if (
-          !p ||
-          !isGreenPixel(
-            p.r,
-            p.g,
-            p.b
-          )
-        ) {
-          break;
-        }
-
-        left = xx;
-      }
-
-
-      for (
-        let xx = x;
-        xx < imageData.width;
-        xx++
-      ) {
-
-        const p =
-          pixelAt(xx, yy);
-
-        if (
-          !p ||
-          !isGreenPixel(
-            p.r,
-            p.g,
-            p.b
-          )
-        ) {
-          break;
-        }
-
-        right = xx;
-      }
-
-
-      if (
-        right - left >= 35
-      ) {
-
-        return {
-          x1: left,
-          x2: right,
-          y: yy
-        };
-
-      }
-
+      return yy;
     }
-
   }
 
   return null;
 }
 
 
-/* =========================================
-   إيجاد أقرب خط عمودي أخضر
-========================================= */
+/* =========================
+   البحث عن الخط السفلي
+========================= */
 
-function findVerticalLine(
-  x,
-  y,
-  direction
-) {
+function findBottom(x,y) {
 
-  const maxDistance = 500;
+  const max = 180;
 
   for (
-    let d = 0;
-    d <= maxDistance;
+    let d=1;
+    d<=max;
     d++
   ) {
 
-    const xx =
-      x + d * direction;
+    const yy = y+d;
 
     if (
-      xx < 0 ||
-      xx >= imageData.width
-    ) {
-      break;
-    }
-
-    const localHeight = 80;
-
-    const y1 =
-      Math.max(
-        0,
-        y - localHeight
-      );
-
-    const y2 =
-      Math.min(
-        imageData.height - 1,
-        y + localHeight
-      );
-
+      yy >= imageData.height
+    ) break;
 
     const score =
-      verticalGreenScore(
-        xx,
-        y1,
-        y2
+      greenHorizontal(
+        yy,
+        Math.max(0,x-40),
+        Math.min(
+          imageData.width-1,
+          x+40
+        )
       );
 
+    if (score > .55) {
 
-    if (score > 0.42) {
-
-      let top = y;
-      let bottom = y;
-
-
-      for (
-        let yy = y;
-        yy >= 0;
-        yy--
-      ) {
-
-        const p =
-          pixelAt(xx, yy);
-
-        if (
-          !p ||
-          !isGreenPixel(
-            p.r,
-            p.g,
-            p.b
-          )
-        ) {
-          break;
-        }
-
-        top = yy;
-      }
-
-
-      for (
-        let yy = y;
-        yy < imageData.height;
-        yy++
-      ) {
-
-        const p =
-          pixelAt(xx, yy);
-
-        if (
-          !p ||
-          !isGreenPixel(
-            p.r,
-            p.g,
-            p.b
-          )
-        ) {
-          break;
-        }
-
-        bottom = yy;
-      }
-
-
-      if (
-        bottom - top >= 20
-      ) {
-
-        return {
-          x: xx,
-          y1: top,
-          y2: bottom
-        };
-
-      }
-
+      return yy;
     }
-
   }
 
   return null;
 }
 
 
-/* =========================================
-   اكتشاف المستطيل
-========================================= */
+/* =========================
+   البحث عن الخط الأيسر
+========================= */
 
-function detectFieldRectangle(x, y) {
+function findLeft(x,y) {
 
-  if (!imageData) {
-    prepareImageAnalysis();
+  const max = 350;
+
+  for (
+    let d=1;
+    d<=max;
+    d++
+  ) {
+
+    const xx=x-d;
+
+    if (xx<0) break;
+
+    const score =
+      greenVertical(
+        xx,
+        Math.max(0,y-40),
+        Math.min(
+          imageData.height-1,
+          y+40
+        )
+      );
+
+    if (score>.55) {
+
+      return xx;
+    }
   }
 
-  if (!imageData) return null;
+  return null;
+}
+
+
+/* =========================
+   البحث عن الخط الأيمن
+========================= */
+
+function findRight(x,y) {
+
+  const max = 350;
+
+  for (
+    let d=1;
+    d<=max;
+    d++
+  ) {
+
+    const xx=x+d;
+
+    if (
+      xx>=imageData.width
+    ) break;
+
+    const score =
+      greenVertical(
+        xx,
+        Math.max(0,y-40),
+        Math.min(
+          imageData.height-1,
+          y+40
+        )
+      );
+
+    if (score>.55) {
+
+      return xx;
+    }
+  }
+
+  return null;
+}
+
+
+/* =========================
+   اكتشاف الخانة
+========================= */
+
+function detectField(x,y) {
+
+  if (!imageData)
+    return null;
 
 
   const top =
-    findHorizontalLine(
-      x,
-      y,
-      -1
-    );
+    findTop(x,y);
 
   const bottom =
-    findHorizontalLine(
-      x,
-      y,
-      1
-    );
+    findBottom(x,y);
 
   const left =
-    findVerticalLine(
-      x,
-      y,
-      -1
-    );
+    findLeft(x,y);
 
   const right =
-    findVerticalLine(
-      x,
-      y,
-      1
-    );
+    findRight(x,y);
 
 
   if (
-    !top ||
-    !bottom ||
-    !left ||
-    !right
+    top === null ||
+    bottom === null ||
+    left === null ||
+    right === null
   ) {
+
     return null;
   }
 
 
-  let x1 = left.x;
-  let x2 = right.x;
-  let y1 = top.y;
-  let y2 = bottom.y;
+  const width =
+    right-left;
 
-
-  if (
-    x2 <= x1 ||
-    y2 <= y1
-  ) {
-    return null;
-  }
-
-
-  const width = x2 - x1;
-  const height = y2 - y1;
+  const height =
+    bottom-top;
 
 
   /*
-    منع التقاط الإطار الكبير للنموذج
+    الخانات المقبولة فقط
   */
 
   if (
-    width > imageData.width * 0.95 ||
-    height > imageData.height * 0.7
-  ) {
-    return null;
-  }
-
-
-  /*
-    منع المستطيلات الصغيرة جدًا
-  */
-
-  if (
-    width < 25 ||
+    width < 35 ||
     height < 15
   ) {
+
     return null;
   }
 
 
   /*
-    التأكد أن نقطة الضغط داخل المستطيل
+    منع التقاط إطار الصفحة الكبير
   */
 
   if (
-    x < x1 ||
-    x > x2 ||
-    y < y1 ||
-    y > y2
+    width >
+    imageData.width * .90
   ) {
+
+    return null;
+  }
+
+
+  if (
+    height >
+    imageData.height * .35
+  ) {
+
+    return null;
+  }
+
+
+  /*
+    منع الخانات البعيدة جدًا
+  */
+
+  if (
+    x-left > 180 ||
+    right-x > 180 ||
+    y-top > 120 ||
+    bottom-y > 120
+  ) {
+
     return null;
   }
 
 
   return {
-    x: x1,
-    y: y1,
-    width: width,
-    height: height
+
+    x:left+2,
+
+    y:top+2,
+
+    width:width-4,
+
+    height:height-4
+
   };
 
 }
 
 
-/* =========================================
+/* =========================
    اكتشاف مربع الاختيار
-========================================= */
+========================= */
 
-function detectCheckbox(x, y) {
+function detectCheckbox(x,y) {
 
-  if (!imageData) return null;
-
-
-  const searchRadius = 45;
-
-
-  let best = null;
-
+  /*
+    نبحث عن مربع صغير فقط
+  */
 
   for (
-    let yy = Math.max(0, y - searchRadius);
-    yy <= Math.min(
-      imageData.height - 1,
-      y + searchRadius
-    );
-    yy++
+    let size=16;
+    size<=38;
+    size+=2
   ) {
 
+    const half =
+      size/2;
+
+
+    const x1 =
+      Math.round(x-half);
+
+    const y1 =
+      Math.round(y-half);
+
+    const x2 =
+      Math.round(x+half);
+
+    const y2 =
+      Math.round(y+half);
+
+
+    let top=0;
+    let bottom=0;
+    let left=0;
+    let right=0;
+
+
     for (
-      let xx = Math.max(0, x - searchRadius);
-      xx <= Math.min(
-        imageData.width - 1,
-        x + searchRadius
-      );
-      xx++
+      let i=x1;
+      i<=x2;
+      i++
     ) {
 
-      /*
-        نبحث عن مربع أسود تقريبًا
-      */
-
-      let horizontal = 0;
-      let vertical = 0;
-
-
-      for (
-        let dx = -12;
-        dx <= 12;
-        dx++
-      ) {
-
-        const p =
-          pixelAt(
-            xx + dx,
-            yy - 12
-          );
-
-        if (
-          p &&
-          isDarkPixel(
-            p.r,
-            p.g,
-            p.b
-          )
-        ) {
-          horizontal++;
-        }
-
-
-        const p2 =
-          pixelAt(
-            xx + dx,
-            yy + 12
-          );
-
-        if (
-          p2 &&
-          isDarkPixel(
-            p2.r,
-            p2.g,
-            p2.b
-          )
-        ) {
-          horizontal++;
-        }
-
-      }
-
-
-      for (
-        let dy = -12;
-        dy <= 12;
-        dy++
-      ) {
-
-        const p =
-          pixelAt(
-            xx - 12,
-            yy + dy
-          );
-
-        if (
-          p &&
-          isDarkPixel(
-            p.r,
-            p.g,
-            p.b
-          )
-        ) {
-          vertical++;
-        }
-
-
-        const p2 =
-          pixelAt(
-            xx + 12,
-            yy + dy
-          );
-
-        if (
-          p2 &&
-          isDarkPixel(
-            p2.r,
-            p2.g,
-            p2.b
-          )
-        ) {
-          vertical++;
-        }
-
-      }
-
+      if (
+        black(pixel(i,y1))
+      )
+        top++;
 
       if (
-        horizontal >= 12 &&
-        vertical >= 12
-      ) {
+        black(pixel(i,y2))
+      )
+        bottom++;
 
-        const distance =
-          Math.hypot(
-            xx - x,
-            yy - y
-          );
+    }
 
 
-        if (
-          !best ||
-          distance < best.distance
-        ) {
+    for (
+      let i=y1;
+      i<=y2;
+      i++
+    ) {
 
-          best = {
-            x: xx - 12,
-            y: yy - 12,
-            size: 24,
-            distance: distance
-          };
+      if (
+        black(pixel(x1,i))
+      )
+        left++;
 
-        }
+      if (
+        black(pixel(x2,i))
+      )
+        right++;
 
-      }
+    }
+
+
+    /*
+      يجب أن تكون هناك
+      أربعة أضلاع للمربع
+    */
+
+    const threshold =
+      size * .45;
+
+
+    if (
+      top > threshold &&
+      bottom > threshold &&
+      left > threshold &&
+      right > threshold
+    ) {
+
+      return {
+
+        x:x1,
+
+        y:y1,
+
+        size:size
+
+      };
 
     }
 
   }
 
 
-  return best;
+  return null;
 }
 
 
-/* =========================================
-   إنشاء خانة كتابة
-========================================= */
+/* =========================
+   الضغط على الصورة
+========================= */
 
-function createTextField(rectangle) {
+formImage.addEventListener(
+"pointerdown",
+function(event) {
+
+  if (!imageData)
+    return;
+
 
   /*
-    إذا كانت هناك خانة موجودة في نفس المكان
-    لا ننشئ واحدة ثانية
+    منع الضغط من الانتقال
   */
 
-  const existing =
-    fields.find(function(field) {
-
-      if (
-        field.type !== "text"
-      ) {
-        return false;
-      }
-
-      return (
-        Math.abs(
-          field.x - rectangle.x
-        ) < 10 &&
-        Math.abs(
-          field.y - rectangle.y
-        ) < 10
-      );
-
-    });
+  event.preventDefault();
 
 
-  if (existing) {
+  const rect =
+    formImage.getBoundingClientRect();
 
-    existing.element
-      .querySelector("input")
-      .focus();
+
+  const scaleX =
+    formImage.naturalWidth /
+    rect.width;
+
+
+  const scaleY =
+    formImage.naturalHeight /
+    rect.height;
+
+
+  const x =
+    (event.clientX-rect.left)
+    * scaleX;
+
+
+  const y =
+    (event.clientY-rect.top)
+    * scaleY;
+
+
+  /*
+    أولاً مربع اختيار
+  */
+
+  const checkbox =
+    detectCheckbox(x,y);
+
+
+  if (checkbox) {
+
+    addCheckbox(checkbox);
 
     return;
   }
 
 
-  const field =
-    document.createElement("div");
+  /*
+    ثانيًا خانة نص
+  */
 
-  field.className = "field";
+  const field =
+    detectField(x,y);
+
+
+  if (field) {
+
+    addTextField(field);
+
+    return;
+  }
 
 
   /*
-    تحويل إحداثيات الصورة الأصلية
-    إلى إحداثيات العرض الحالي
+    لا يوجد شيء
+    لا نفعل أي شيء
   */
 
-  const scale =
-    formImage.clientWidth /
-    formImage.naturalWidth;
+});
 
 
-  field.style.left =
-    (rectangle.x * scale) + "px";
+/* =========================
+   إضافة خانة كتابة
+========================= */
 
-  field.style.top =
-    (rectangle.y * scale) + "px";
+function addTextField(rectangle) {
 
-  field.style.width =
-    (rectangle.width * scale) + "px";
+  /*
+    منع تكرار نفس الخانة
+  */
 
-  field.style.height =
-    (rectangle.height * scale) + "px";
+  const duplicate =
+    fields.find(
+      f =>
+        f.type==="text" &&
+        Math.abs(
+          f.x-rectangle.x
+        ) < 8 &&
+        Math.abs(
+          f.y-rectangle.y
+        ) < 8
+    );
+
+
+  if (duplicate) {
+
+    const input =
+      duplicate.element
+      .querySelector("input");
+
+    input.focus();
+
+    return;
+  }
+
+
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "field";
 
 
   const input =
     document.createElement("input");
 
-  input.type = "text";
+  input.type="text";
 
-  input.autocomplete = "off";
+  input.autocomplete="off";
 
-  input.spellcheck = false;
+  input.spellcheck=false;
 
 
-  const deleteButton =
+  const del =
     document.createElement("span");
 
-  deleteButton.className = "delete";
+  del.className="delete";
 
-  deleteButton.textContent = "حذف";
+  del.textContent="حذف";
 
 
-  deleteButton.addEventListener(
+  del.addEventListener(
     "pointerdown",
-    function(event) {
+    function(e) {
 
-      event.stopPropagation();
+      e.stopPropagation();
 
-      field.remove();
+      div.remove();
 
       fields =
         fields.filter(
-          f => f.element !== field
+          f => f.element!==div
         );
 
     }
   );
 
 
-  field.appendChild(input);
-  field.appendChild(deleteButton);
+  div.appendChild(input);
 
-  formArea.appendChild(field);
+  div.appendChild(del);
+
+  formArea.appendChild(div);
 
 
   const item = {
-    type: "text",
-    element: field,
-    x: rectangle.x,
-    y: rectangle.y,
-    width: rectangle.width,
-    height: rectangle.height
+
+    type:"text",
+
+    element:div,
+
+    x:rectangle.x,
+
+    y:rectangle.y,
+
+    width:rectangle.width,
+
+    height:rectangle.height
+
   };
 
 
   fields.push(item);
+
+
+  positionField(item);
 
 
   input.focus();
@@ -1300,397 +1066,444 @@ function createTextField(rectangle) {
 }
 
 
-/* =========================================
-   خانة احتياطية
-========================================= */
+/* =========================
+   إضافة مربع اختيار
+========================= */
 
-function createFallbackField(x, y) {
+function addCheckbox(box) {
 
-  const width = 220;
-  const height = 45;
+  /*
+    منع تكرار نفس المربع
+  */
+
+  const duplicate =
+    fields.find(
+      f =>
+        f.type==="checkbox" &&
+        Math.abs(
+          f.x-box.x
+        ) < 10 &&
+        Math.abs(
+          f.y-box.y
+        ) < 10
+    );
 
 
-  const rectangle = {
+  if (duplicate) {
 
-    x: Math.max(
-      0,
-      Math.min(
-        imageData.width - width,
-        x - width / 2
-      )
-    ),
+    toggleCheckbox(
+      duplicate
+    );
 
-    y: Math.max(
-      0,
-      Math.min(
-        imageData.height - height,
-        y - height / 2
-      )
-    ),
+    return;
+  }
 
-    width: width,
-    height: height
+
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "checkbox";
+
+  div.textContent="✓";
+
+
+  formArea.appendChild(div);
+
+
+  const item = {
+
+    type:"checkbox",
+
+    element:div,
+
+    x:box.x,
+
+    y:box.y,
+
+    width:box.size,
+
+    height:box.size,
+
+    checked:true
 
   };
 
 
-  createTextField(rectangle);
+  fields.push(item);
 
-  showMessage(
-    "لم أجد حدود الخانة بوضوح، لذلك وضعت خانة صغيرة في مكان الضغط."
+
+  positionField(item);
+
+
+  div.addEventListener(
+    "pointerdown",
+    function(e) {
+
+      e.stopPropagation();
+
+      toggleCheckbox(item);
+
+    }
   );
 
 }
 
 
-/* =========================================
-   إنشاء مربع اختيار
-========================================= */
+/* =========================
+   تشغيل / إلغاء الصح
+========================= */
 
-function createCheckbox(
-  x,
-  y,
-  size
-) {
+function toggleCheckbox(item) {
+
+  item.checked =
+    !item.checked;
+
+  item.element.textContent =
+    item.checked ? "✓" : "";
+
+}
+
+
+/* =========================
+   تحديد مكان العنصر
+========================= */
+
+function positionField(item) {
 
   const scale =
     formImage.clientWidth /
     formImage.naturalWidth;
 
 
-  const box =
-    document.createElement("div");
-
-  box.className =
-    "check-field";
+  item.element.style.left =
+    (item.x*scale)+"px";
 
 
-  box.style.left =
-    (x * scale) + "px";
-
-  box.style.top =
-    (y * scale) + "px";
-
-  box.style.width =
-    (size * scale) + "px";
-
-  box.style.height =
-    (size * scale) + "px";
+  item.element.style.top =
+    (item.y*scale)+"px";
 
 
-  box.textContent = "✓";
+  item.element.style.width =
+    (item.width*scale)+"px";
 
 
-  let checked = true;
+  item.element.style.height =
+    (item.height*scale)+"px";
 
 
-  box.addEventListener(
-    "pointerdown",
-    function(event) {
+  if (
+    item.type==="checkbox"
+  ) {
 
-      event.stopPropagation();
-
-      checked = !checked;
-
-      box.textContent =
-        checked ? "✓" : "";
-
-    }
-  );
-
-
-  formArea.appendChild(box);
-
-
-  fields.push({
-
-    type: "checkbox",
-
-    element: box,
-
-    x: x,
-
-    y: y,
-
-    width: size,
-
-    height: size,
-
-    checked: true
-
-  });
-
-}
-
-
-/* =========================================
-   مسح الخانات
-========================================= */
-
-function removeAllFields() {
-
-  fields.forEach(function(field) {
-
-    if (
-      field.element &&
-      field.element.parentNode
-    ) {
-
-      field.element.remove();
-
-    }
-
-  });
-
-  fields = [];
-
-}
-
-
-clearFieldsButton.addEventListener(
-  "click",
-  function() {
-
-    if (!fields.length) {
-      showMessage("لا توجد خانات لمسحها.");
-      return;
-    }
-
-    removeAllFields();
-
-    showMessage("تم مسح جميع الخانات.");
+    item.element.style.fontSize =
+      Math.max(
+        14,
+        item.height*scale*.75
+      )+"px";
 
   }
-);
-
-
-/* =========================================
-   إعادة وضع الخانات بعد التكبير
-========================================= */
-
-function repositionFields() {
-
-  const scale =
-    formImage.clientWidth /
-    formImage.naturalWidth;
-
-
-  fields.forEach(function(field) {
-
-    const element =
-      field.element;
-
-
-    element.style.left =
-      (field.x * scale) + "px";
-
-    element.style.top =
-      (field.y * scale) + "px";
-
-    element.style.width =
-      (field.width * scale) + "px";
-
-    element.style.height =
-      (field.height * scale) + "px";
-
-  });
 
 }
 
 
-/*
-  نراقب تغيير حجم الصورة
-*/
+/* =========================
+   التكبير
+========================= */
 
-const resizeObserver =
-  new ResizeObserver(function() {
+function updateZoom() {
 
-    repositionFields();
-
-  });
-
-
-resizeObserver.observe(formImage);
+  const width =
+    formImage.naturalWidth *
+    zoom;
 
 
-/* =========================================
-   حفظ النموذج
-========================================= */
-
-saveImageButton.addEventListener(
-  "click",
-  function() {
-
-    if (
-      !formImage.src ||
-      !formImage.naturalWidth
-    ) {
-
-      showMessage(
-        "اختر صورة النموذج أولاً."
-      );
-
-      return;
-    }
+  formImage.style.width =
+    width+"px";
 
 
-    const canvas =
-      document.createElement("canvas");
-
-    canvas.width =
-      formImage.naturalWidth;
-
-    canvas.height =
-      formImage.naturalHeight;
+  zoomText.textContent =
+    Math.round(zoom*100)+"%";
 
 
-    const ctx =
-      canvas.getContext("2d");
+  fields.forEach(
+    positionField
+  );
+
+}
 
 
-    /*
-      الصورة الأصلية
-    */
+plus.addEventListener(
+"click",
+function() {
 
-    ctx.drawImage(
-      formImage,
-      0,
-      0,
-      canvas.width,
-      canvas.height
+  zoom =
+    Math.min(
+      2.5,
+      zoom+.1
     );
 
+  updateZoom();
 
-    /*
-      الكتابة
-    */
+});
 
-    fields.forEach(function(field) {
+
+minus.addEventListener(
+"click",
+function() {
+
+  zoom =
+    Math.max(
+      .5,
+      zoom-.1
+    );
+
+  updateZoom();
+
+});
+
+
+/* =========================
+   مسح الخانات
+========================= */
+
+function removeFields() {
+
+  fields.forEach(
+    f => {
 
       if (
-        field.type === "checkbox"
+        f.element
+      )
+        f.element.remove();
+
+    }
+  );
+
+  fields=[];
+}
+
+
+clearButton.addEventListener(
+"click",
+function() {
+
+  removeFields();
+
+  showMessage(
+    "تم مسح جميع الخانات."
+  );
+
+});
+
+
+/* =========================
+   إعادة ترتيب الخانات
+========================= */
+
+window.addEventListener(
+"resize",
+function() {
+
+  fields.forEach(
+    positionField
+  );
+
+});
+
+
+/* =========================
+   حفظ النموذج
+========================= */
+
+saveButton.addEventListener(
+"click",
+function() {
+
+  if (
+    !formImage.src ||
+    !formImage.naturalWidth
+  ) {
+
+    showMessage(
+      "اختر صورة النموذج أولاً."
+    );
+
+    return;
+  }
+
+
+  const output =
+    document.createElement("canvas");
+
+
+  output.width =
+    formImage.naturalWidth;
+
+  output.height =
+    formImage.naturalHeight;
+
+
+  const outputCtx =
+    output.getContext("2d");
+
+
+  /*
+    الصورة الأصلية
+  */
+
+  outputCtx.drawImage(
+    formImage,
+    0,
+    0,
+    output.width,
+    output.height
+  );
+
+
+  /*
+    العناصر
+  */
+
+  fields.forEach(
+    function(item) {
+
+
+      if (
+        item.type==="checkbox"
       ) {
 
         if (
-          field.element.textContent.trim() === "✓"
-        ) {
+          !item.checked
+        )
+          return;
 
-          ctx.font =
-            `${Math.max(
-              14,
-              field.height * 0.8
-            )}px Arial`;
 
-          ctx.fillStyle = "#000";
+        outputCtx.fillStyle =
+          "#000";
 
-          ctx.textAlign = "center";
 
-          ctx.textBaseline = "middle";
+        outputCtx.font =
+          Math.max(
+            16,
+            item.height*.8
+          )+"px Arial";
 
-          ctx.fillText(
-            "✓",
-            field.x + field.width / 2,
-            field.y + field.height / 2
-          );
 
-        }
+        outputCtx.textAlign =
+          "center";
+
+
+        outputCtx.textBaseline =
+          "middle";
+
+
+        outputCtx.fillText(
+          "✓",
+
+          item.x+
+          item.width/2,
+
+          item.y+
+          item.height/2
+        );
+
 
         return;
+
       }
 
 
       const input =
-        field.element.querySelector("input");
+        item.element
+        .querySelector("input");
 
 
       if (
         !input ||
         !input.value.trim()
-      ) {
+      )
         return;
-      }
 
 
       /*
-        نمسح فقط داخل الخانة
-        ثم نكتب النص
+        تغطية مكان الكتابة
       */
 
-      ctx.fillStyle = "white";
+      outputCtx.fillStyle =
+        "white";
 
-      ctx.fillRect(
-        field.x,
-        field.y,
-        field.width,
-        field.height
+
+      outputCtx.fillRect(
+        item.x,
+        item.y,
+        item.width,
+        item.height
       );
 
 
-      ctx.fillStyle = "#000";
+      /*
+        الكتابة
+      */
 
-      ctx.textAlign = "left";
+      outputCtx.fillStyle =
+        "#000";
 
-      ctx.textBaseline = "middle";
 
-
-      let fontSize =
+      outputCtx.font =
         Math.max(
           12,
-          field.height * 0.55
-        );
+          item.height*.55
+        )+"px Arial";
 
 
-      ctx.font =
-        `${fontSize}px Arial`;
+      outputCtx.textAlign =
+        "left";
 
 
-      ctx.fillText(
+      outputCtx.textBaseline =
+        "middle";
+
+
+      outputCtx.fillText(
         input.value,
-        field.x + 5,
-        field.y + field.height / 2
+
+        item.x+5,
+
+        item.y+
+        item.height/2
       );
 
-    });
+    }
+  );
 
 
-    /*
-      تحميل الصورة
-    */
+  /*
+    إنشاء الملف
+  */
 
-    const link =
-      document.createElement("a");
-
-    link.download =
-      "formular-ausgefüllt.png";
-
-    link.href =
-      canvas.toDataURL(
-        "image/png"
-      );
-
-    link.click();
+  const link =
+    document.createElement("a");
 
 
-    showMessage(
-      "تم تجهيز النموذج وحفظه."
+  link.download =
+    "formular-ausgefuellt.png";
+
+
+  link.href =
+    output.toDataURL(
+      "image/png"
     );
 
-  }
-);
+
+  link.click();
 
 
-/* =========================================
-   منع سحب الصورة
-========================================= */
+  showMessage(
+    "تم حفظ النموذج."
+  );
 
-formImage.addEventListener(
-  "dragstart",
-  function(event) {
-
-    event.preventDefault();
-
-  }
-);
+});
 
 </script>
 
