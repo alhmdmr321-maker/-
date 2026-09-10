@@ -11,17 +11,11 @@
 
 <title>تعبئة النموذج</title>
 
-
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-
 <style>
-
-/* =========================================
-   الإعدادات العامة
-========================================= */
 
 *{
     box-sizing:border-box;
@@ -29,499 +23,258 @@
 
 body{
     margin:0;
-
     background:#eeeeee;
-
     font-family:
         Arial,
         "Segoe UI Emoji",
         "Noto Color Emoji",
         sans-serif;
-
     direction:rtl;
 }
 
-
-/* =========================================
-   العنوان
-========================================= */
-
 .topbar{
-
     background:#111111;
-
     color:#ffffff;
-
     padding:14px;
-
     text-align:center;
-
 }
 
 .topbar h2{
-
     margin:0;
-
     font-size:22px;
-
 }
-
-
-/* =========================================
-   شريط الأزرار
-========================================= */
 
 .toolbar{
-
     background:#ffffff;
-
     padding:12px;
-
     display:flex;
-
     justify-content:center;
-
     align-items:center;
-
     gap:10px;
-
     flex-wrap:wrap;
-
     position:sticky;
-
     top:0;
-
     z-index:1000;
-
     box-shadow:
         0 2px 8px rgba(0,0,0,.15);
-
 }
-
 
 button,
 .uploadButton{
-
     border:0;
-
     border-radius:10px;
-
     padding:11px 17px;
-
     font-size:16px;
-
     cursor:pointer;
-
     font-family:
         Arial,
         "Segoe UI Emoji",
         "Noto Color Emoji",
         sans-serif;
-
 }
-
 
 .uploadButton{
-
     background:#1976d2;
-
     color:#ffffff;
-
 }
-
 
 .addButton{
-
     background:#673ab7;
-
     color:#ffffff;
-
 }
-
 
 .saveButton{
-
     background:#16803c;
-
     color:#ffffff;
-
 }
-
-
-/* =========================================
-   زر الحذف
-   يظهر فقط عند تحديد النص
-========================================= */
 
 .deleteToolbarButton{
-
     background:#d32f2f;
-
     color:#ffffff;
-
     display:none;
-
     min-width:90px;
-
 }
-
 
 .deleteToolbarButton.show{
-
     display:block;
-
 }
-
 
 input[type="file"]{
-
     display:none;
-
 }
-
 
 #status{
-
     width:100%;
-
     text-align:center;
-
     color:#555555;
-
     font-size:14px;
-
 }
-
-
-/* =========================================
-   التعليمات
-========================================= */
 
 .help{
-
     background:#ffffff;
-
     margin:10px auto;
-
     padding:12px 15px;
-
     border-radius:12px;
-
     max-width:760px;
-
     text-align:center;
-
     color:#555555;
-
     font-size:15px;
-
     line-height:1.8;
-
 }
-
-
-/* =========================================
-   مساحة العمل
-========================================= */
 
 .workspace{
-
     padding:15px;
-
     overflow:auto;
-
 }
-
 
 #canvasArea{
-
     position:relative;
-
     margin:auto;
-
     width:fit-content;
-
     display:none;
-
 }
-
-
-/* =========================================
-   صورة النموذج
-========================================= */
 
 #formImage{
-
     display:block;
-
     max-width:none;
-
     height:auto;
-
     user-select:none;
-
     -webkit-user-drag:none;
-
     pointer-events:auto;
-
 }
-
-
-/* =========================================
-   مربع الكتابة
-========================================= */
 
 #writingBox{
-
     position:fixed;
-
     left:50%;
-
     top:50%;
-
     transform:
         translate(-50%,-50%);
-
     width:min(90vw,500px);
-
     background:#ffffff;
-
     border:2px solid #1976d2;
-
     border-radius:12px;
-
     padding:8px;
-
     display:none;
-
     align-items:center;
-
     z-index:5000;
-
     box-shadow:
         0 5px 25px rgba(0,0,0,.3);
-
     direction:ltr;
-
 }
-
 
 #writingInput{
-
     width:calc(100% - 55px);
-
     min-height:48px;
-
     border:0;
-
     outline:0;
-
     font-size:18px;
-
     padding:8px;
-
     resize:none;
-
     direction:auto;
-
     unicode-bidi:plaintext;
-
     font-family:
         Arial,
         "Segoe UI Emoji",
         "Noto Color Emoji",
         sans-serif;
-
 }
-
 
 #confirmText{
-
     width:45px;
-
     height:45px;
-
     padding:0;
-
     background:#16803c;
-
     color:#ffffff;
-
     border-radius:50%;
-
     font-size:23px;
-
     font-weight:bold;
-
     flex-shrink:0;
-
 }
 
-
-/* =========================================
-   النص فوق الصورة
-========================================= */
-
 .textItem{
-
     position:absolute;
-
     min-width:30px;
-
     min-height:30px;
-
     padding:2px 4px;
-
     color:#000000;
-
     background:transparent;
-
     font-family:
         Arial,
         "Segoe UI Emoji",
         "Noto Color Emoji",
         sans-serif;
-
     white-space:pre-wrap;
-
     direction:auto;
-
     unicode-bidi:plaintext;
-
     line-height:1.15;
-
     z-index:20;
-
     cursor:move;
-
     user-select:none;
-
     -webkit-user-select:none;
-
     -webkit-touch-callout:none;
-
     touch-action:none;
-
     pointer-events:auto;
-
 }
-
-
-/* =========================================
-   عند تحديد النص
-========================================= */
 
 .textItem.selected{
-
     outline:2px dashed #1976d2;
-
     border-radius:3px;
-
 }
-
-
-/* =========================================
-   أزرار تكبير وتصغير النص
-========================================= */
 
 .sizeControl{
-
     position:fixed;
-
     top:50%;
-
     transform:
         translateY(-50%);
-
     width:48px;
-
     height:48px;
-
     padding:0;
-
     border:0;
-
     border-radius:50%;
-
     background:#1976d2;
-
     color:#ffffff;
-
     font-size:29px;
-
     font-weight:bold;
-
     line-height:48px;
-
     z-index:3000;
-
     box-shadow:
         0 3px 10px rgba(0,0,0,.25);
-
 }
 
-
 .sizeControl:active{
-
     transform:
         translateY(-50%)
         scale(.92);
-
 }
-
 
 #increaseSize{
-
     left:10px;
-
 }
-
 
 #decreaseSize{
-
     right:10px;
-
 }
-
 
 .sizeControl:disabled{
-
     opacity:.35;
-
 }
-
-
-/* =========================================
-   على الشاشات الصغيرة
-========================================= */
 
 @media(max-width:600px){
 
     .toolbar{
-
         gap:7px;
-
         padding:9px;
-
     }
-
 
     button,
     .uploadButton{
-
         font-size:15px;
-
         padding:10px 13px;
-
     }
 
-
     .help{
-
         font-size:14px;
-
         margin:8px;
-
     }
 
 }
@@ -530,13 +283,7 @@ input[type="file"]{
 
 </head>
 
-
 <body>
-
-
-<!-- ========================================
-     العنوان
-========================================= -->
 
 <div class="topbar">
 
@@ -546,14 +293,7 @@ input[type="file"]{
 
 </div>
 
-
-
-<!-- ========================================
-     الأزرار
-========================================= -->
-
 <div class="toolbar">
-
 
     <label class="uploadButton">
 
@@ -566,8 +306,6 @@ input[type="file"]{
 
     </label>
 
-
-
     <button
         class="addButton"
         id="addTextButton"
@@ -576,8 +314,6 @@ input[type="file"]{
         ✏️ إضافة كتابة
 
     </button>
-
-
 
     <button
         class="saveButton"
@@ -588,13 +324,6 @@ input[type="file"]{
 
     </button>
 
-
-
-    <!--
-        هذا الزر لا يظهر إلا بعد
-        تحديد جملة.
-    -->
-
     <button
         class="deleteToolbarButton"
         id="deleteSelectedButton"
@@ -604,22 +333,13 @@ input[type="file"]{
 
     </button>
 
-
-
     <div id="status">
 
         اختر صورة للبدء
 
     </div>
 
-
 </div>
-
-
-
-<!-- ========================================
-     التعليمات
-========================================= -->
 
 <div class="help">
 
@@ -631,12 +351,6 @@ input[type="file"]{
 
 </div>
 
-
-
-<!-- ========================================
-     أزرار حجم النص
-========================================= -->
-
 <button
     id="increaseSize"
     class="sizeControl"
@@ -646,8 +360,6 @@ input[type="file"]{
     +
 
 </button>
-
-
 
 <button
     id="decreaseSize"
@@ -659,42 +371,24 @@ input[type="file"]{
 
 </button>
 
-
-
-<!-- ========================================
-     مساحة الصورة
-========================================= -->
-
 <div class="workspace">
 
-
     <div id="canvasArea">
-
 
         <img
             id="formImage"
             alt="النموذج">
 
-
     </div>
-
 
 </div>
 
-
-
-<!-- ========================================
-     مربع الكتابة
-========================================= -->
-
 <div id="writingBox">
-
 
     <textarea
         id="writingInput"
         placeholder="اكتب الجملة هنا..."
         rows="2"></textarea>
-
 
     <button
         id="confirmText"
@@ -704,117 +398,84 @@ input[type="file"]{
 
     </button>
 
-
 </div>
 
-
-
 <script>
-
-
-/* =================================================
-   العناصر
-================================================= */
 
 const imageInput =
     document.getElementById(
         "imageInput"
     );
 
-
 const formImage =
     document.getElementById(
         "formImage"
     );
-
 
 const canvasArea =
     document.getElementById(
         "canvasArea"
     );
 
-
 const writingBox =
     document.getElementById(
         "writingBox"
     );
-
 
 const writingInput =
     document.getElementById(
         "writingInput"
     );
 
-
 const confirmText =
     document.getElementById(
         "confirmText"
     );
-
 
 const addTextButton =
     document.getElementById(
         "addTextButton"
     );
 
-
 const saveButton =
     document.getElementById(
         "saveButton"
     );
-
 
 const status =
     document.getElementById(
         "status"
     );
 
-
 const increaseSizeButton =
     document.getElementById(
         "increaseSize"
     );
-
 
 const decreaseSizeButton =
     document.getElementById(
         "decreaseSize"
     );
 
-
 const deleteSelectedButton =
     document.getElementById(
         "deleteSelectedButton"
     );
 
-
-/* =================================================
-   المتغيرات
-================================================= */
-
 let imageLoaded =
     false;
-
 
 let selectedText =
     null;
 
-
 let textCounter =
     0;
-
 
 let detectedFontSize =
     22;
 
-
 let displayScale =
     1;
-
-
-/* =================================================
-   حساب مقياس الصورة
-================================================= */
 
 function updateDisplayScale(){
 
@@ -826,20 +487,13 @@ function updateDisplayScale(){
         displayScale = 1;
 
         return;
-
     }
-
 
     displayScale =
         formImage.offsetWidth /
         formImage.naturalWidth;
 
 }
-
-
-/* =================================================
-   تحميل الصورة
-================================================= */
 
 imageInput.addEventListener(
     "change",
@@ -848,17 +502,12 @@ imageInput.addEventListener(
         const file =
             event.target.files[0];
 
-
         if(!file){
-
             return;
-
         }
-
 
         const reader =
             new FileReader();
-
 
         reader.onload =
             function(e){
@@ -869,14 +518,8 @@ imageInput.addEventListener(
                         imageLoaded =
                             true;
 
-
                         canvasArea.style.display =
                             "block";
-
-
-                        /*
-                         * عرض الصورة بحجم مناسب للشاشة.
-                         */
 
                         const maxWidth =
                             Math.min(
@@ -884,51 +527,37 @@ imageInput.addEventListener(
                                 formImage.naturalWidth
                             );
 
-
                         formImage.style.width =
                             maxWidth + "px";
-
 
                         formImage.style.height =
                             "auto";
 
-
                         updateDisplayScale();
 
-
                         clearTexts();
-
 
                         status.textContent =
                             "⏳ جاري تحديد حجم الخط...";
 
-
                         await detectFontSize(
                             e.target.result
                         );
-
 
                         status.textContent =
                             "✅ تم تجهيز الصورة. اضغط «إضافة كتابة».";
 
                     };
 
-
                 formImage.src =
                     e.target.result;
 
             };
 
-
         reader.readAsDataURL(file);
 
     }
 );
-
-
-/* =================================================
-   تحديد حجم الخط تلقائياً
-================================================= */
 
 async function detectFontSize(
     imageSource
@@ -942,55 +571,38 @@ async function detectFontSize(
                 "deu+eng"
             );
 
-
         const words =
             result.data.words || [];
 
-
         const heights = [];
-
 
         for(
             const word of words
         ){
 
             if(!word.text){
-
                 continue;
-
             }
-
 
             const width =
                 word.bbox.x1 -
                 word.bbox.x0;
 
-
             const height =
                 word.bbox.y1 -
                 word.bbox.y0;
 
-
             if(height < 6){
-
                 continue;
-
             }
-
 
             if(height > 100){
-
                 continue;
-
             }
-
 
             if(width < 3){
-
                 continue;
-
             }
-
 
             heights.push(
                 height
@@ -998,22 +610,18 @@ async function detectFontSize(
 
         }
 
-
         if(heights.length){
 
             heights.sort(
                 (a,b)=>a-b
             );
 
-
             const middle =
                 Math.floor(
                     heights.length / 2
                 );
 
-
             let median;
-
 
             if(
                 heights.length % 2
@@ -1031,7 +639,6 @@ async function detectFontSize(
                     ) / 2;
 
             }
-
 
             detectedFontSize =
                 Math.max(
@@ -1051,18 +658,12 @@ async function detectFontSize(
             error
         );
 
-
         detectedFontSize =
             22;
 
     }
 
 }
-
-
-/* =================================================
-   فتح مربع الكتابة
-================================================= */
 
 addTextButton.addEventListener(
     "click",
@@ -1075,27 +676,18 @@ addTextButton.addEventListener(
             );
 
             return;
-
         }
-
 
         writingInput.value =
             "";
 
-
         writingBox.style.display =
             "flex";
-
 
         writingInput.focus();
 
     }
 );
-
-
-/* =================================================
-   تأكيد الكتابة
-================================================= */
 
 confirmText.addEventListener(
     "click",
@@ -1104,36 +696,26 @@ confirmText.addEventListener(
         const text =
             writingInput.value.trim();
 
-
         if(!text){
 
             writingBox.style.display =
                 "none";
 
             return;
-
         }
-
 
         createTextItem(
             text
         );
 
-
         writingInput.value =
             "";
-
 
         writingBox.style.display =
             "none";
 
     }
 );
-
-
-/* =================================================
-   زر Enter
-================================================= */
 
 writingInput.addEventListener(
     "keydown",
@@ -1153,39 +735,25 @@ writingInput.addEventListener(
     }
 );
 
-
-/* =================================================
-   إنشاء الجملة
-================================================= */
-
 function createTextItem(
     text
 ){
 
     textCounter++;
 
-
     const item =
         document.createElement(
             "div"
         );
 
-
     item.className =
         "textItem";
-
 
     item.dataset.id =
         textCounter;
 
-
-    /*
-     * حجم الخط الأصلي.
-     */
-
     item.dataset.fontSize =
         detectedFontSize;
-
 
     item.style.fontSize =
         (
@@ -1193,53 +761,28 @@ function createTextItem(
             displayScale
         ) + "px";
 
-
-    /*
-     * مهم:
-     * نضع النص نفسه كـ Text Node.
-     * هذا يحافظ على الإيموجي.
-     */
-
     const textNode =
         document.createTextNode(
             text
         );
 
-
     item.appendChild(
         textNode
     );
 
-
-    /*
-     * وضع الجملة داخل الصورة.
-     */
-
     item.style.left =
         "20px";
 
-
     item.style.top =
         "20px";
-
 
     canvasArea.appendChild(
         item
     );
 
-
-    /*
-     * تفعيل السحب.
-     */
-
     enableDragging(
         item
     );
-
-
-    /*
-     * تحديد الجملة مباشرة.
-     */
 
     selectText(
         item
@@ -1247,18 +790,9 @@ function createTextItem(
 
 }
 
-
-/* =================================================
-   تحديد الجملة
-================================================= */
-
 function selectText(
     item
 ){
-
-    /*
-     * إزالة التحديد عن جميع الجمل.
-     */
 
     document
         .querySelectorAll(
@@ -1274,28 +808,16 @@ function selectText(
             }
         );
 
-
-    /*
-     * تحديد الجملة المطلوبة.
-     */
-
     item.classList.add(
         "selected"
     );
 
-
     selectedText =
         item;
-
 
     updateControls();
 
 }
-
-
-/* =================================================
-   إلغاء تحديد الجملة
-================================================= */
 
 function unselectText(){
 
@@ -1313,41 +835,23 @@ function unselectText(){
             }
         );
 
-
     selectedText =
         null;
-
 
     updateControls();
 
 }
-
-
-/* =================================================
-   تحديث حالة الأزرار
-================================================= */
 
 function updateControls(){
 
     const hasSelection =
         !!selectedText;
 
-
-    /*
-     * أزرار الحجم.
-     */
-
     increaseSizeButton.disabled =
         !hasSelection;
 
-
     decreaseSizeButton.disabled =
         !hasSelection;
-
-
-    /*
-     * زر الحذف.
-     */
 
     if(hasSelection){
 
@@ -1365,11 +869,6 @@ function updateControls(){
 
 }
 
-
-/* =================================================
-   حذف الجملة المحددة
-================================================= */
-
 deleteSelectedButton.addEventListener(
     "click",
     function(event){
@@ -1378,34 +877,22 @@ deleteSelectedButton.addEventListener(
 
         event.stopPropagation();
 
-
         if(!selectedText){
-
             return;
-
         }
-
 
         const itemToDelete =
             selectedText;
 
-
         selectedText =
             null;
 
-
         itemToDelete.remove();
-
 
         updateControls();
 
     }
 );
-
-
-/* =================================================
-   السحب باللمس والماوس
-================================================= */
 
 function enableDragging(
     item
@@ -1414,78 +901,48 @@ function enableDragging(
     let dragging =
         false;
 
-
     let startX =
         0;
-
 
     let startY =
         0;
 
-
     let originalLeft =
         0;
 
-
     let originalTop =
         0;
-
-
-    /*
-     * عند الضغط على الجملة.
-     */
 
     item.addEventListener(
         "pointerdown",
         function(event){
 
-            /*
-             * مهم جداً:
-             * منع المتصفح من تمرير الصفحة
-             * أثناء سحب الجملة.
-             */
-
             event.preventDefault();
 
             event.stopPropagation();
-
-
-            /*
-             * تحديد الجملة فوراً.
-             */
 
             selectText(
                 item
             );
 
-
             dragging =
                 true;
-
 
             startX =
                 event.clientX;
 
-
             startY =
                 event.clientY;
-
 
             originalLeft =
                 parseFloat(
                     item.style.left
                 ) || 0;
 
-
             originalTop =
                 parseFloat(
                     item.style.top
                 ) || 0;
-
-
-            /*
-             * تثبيت الإصبع على الجملة.
-             */
 
             try{
 
@@ -1498,65 +955,41 @@ function enableDragging(
         }
     );
 
-
-    /*
-     * أثناء السحب.
-     */
-
     item.addEventListener(
         "pointermove",
         function(event){
 
             if(!dragging){
-
                 return;
-
             }
-
 
             event.preventDefault();
 
             event.stopPropagation();
 
-
             const dx =
                 event.clientX -
                 startX;
-
 
             const dy =
                 event.clientY -
                 startY;
 
-
             let newLeft =
                 originalLeft +
                 dx;
-
 
             let newTop =
                 originalTop +
                 dy;
 
-
-            /*
-             * حدود الصورة.
-             */
-
             const maxLeft =
                 formImage.offsetWidth -
                 item.offsetWidth;
 
-
             const maxTop =
                 formImage.offsetHeight -
                 item.offsetHeight;
-
-
-            /*
-             * منع خروج الجملة
-             * خارج الصورة.
-             */
 
             newLeft =
                 Math.max(
@@ -1570,7 +1003,6 @@ function enableDragging(
                     )
                 );
 
-
             newTop =
                 Math.max(
                     0,
@@ -1583,14 +1015,8 @@ function enableDragging(
                     )
                 );
 
-
-            /*
-             * تحديث المكان.
-             */
-
             item.style.left =
                 newLeft + "px";
-
 
             item.style.top =
                 newTop + "px";
@@ -1598,34 +1024,20 @@ function enableDragging(
         }
     );
 
-
-    /*
-     * عند رفع الإصبع.
-     */
-
     item.addEventListener(
         "pointerup",
         function(event){
 
             if(!dragging){
-
                 return;
-
             }
-
 
             dragging =
                 false;
 
-
-            /*
-             * تبقى الجملة محددة.
-             */
-
             selectText(
                 item
             );
-
 
             try{
 
@@ -1638,18 +1050,12 @@ function enableDragging(
         }
     );
 
-
-    /*
-     * في حالة إلغاء اللمس.
-     */
-
     item.addEventListener(
         "pointercancel",
         function(event){
 
             dragging =
                 false;
-
 
             try{
 
@@ -1663,6 +1069,199 @@ function enableDragging(
     );
 
 }
+
+
+/* =================================================
+   السحب من أي مكان على الشاشة
+================================================= */
+
+let screenDragging =
+    false;
+
+let screenDragStartX =
+    0;
+
+let screenDragStartY =
+    0;
+
+let screenOriginalLeft =
+    0;
+
+let screenOriginalTop =
+    0;
+
+
+document.addEventListener(
+    "pointerdown",
+    function(event){
+
+        if(!selectedText){
+            return;
+        }
+
+        /*
+         * لا نبدأ السحب من أزرار التحكم
+         * أو مربع الكتابة.
+         */
+
+        if(
+            event.target.closest("button") ||
+            event.target.closest("label") ||
+            event.target.closest("input") ||
+            event.target.closest("textarea") ||
+            event.target.closest("#writingBox")
+        ){
+            return;
+        }
+
+        /*
+         * إذا ضغط على الجملة نفسها،
+         * السحب الخاص بها يتولى الأمر.
+         */
+
+        if(
+            event.target.classList &&
+            event.target.classList.contains("textItem")
+        ){
+            return;
+        }
+
+        screenDragging =
+            true;
+
+        screenDragStartX =
+            event.clientX;
+
+        screenDragStartY =
+            event.clientY;
+
+        screenOriginalLeft =
+            parseFloat(
+                selectedText.style.left
+            ) || 0;
+
+        screenOriginalTop =
+            parseFloat(
+                selectedText.style.top
+            ) || 0;
+
+        event.preventDefault();
+
+        try{
+
+            document.documentElement.setPointerCapture(
+                event.pointerId
+            );
+
+        }catch(error){}
+
+    }
+);
+
+
+document.addEventListener(
+    "pointermove",
+    function(event){
+
+        if(
+            !screenDragging ||
+            !selectedText
+        ){
+            return;
+        }
+
+        event.preventDefault();
+
+        const dx =
+            event.clientX -
+            screenDragStartX;
+
+        const dy =
+            event.clientY -
+            screenDragStartY;
+
+        let newLeft =
+            screenOriginalLeft +
+            dx;
+
+        let newTop =
+            screenOriginalTop +
+            dy;
+
+        const maxLeft =
+            formImage.offsetWidth -
+            selectedText.offsetWidth;
+
+        const maxTop =
+            formImage.offsetHeight -
+            selectedText.offsetHeight;
+
+        newLeft =
+            Math.max(
+                0,
+                Math.min(
+                    newLeft,
+                    Math.max(
+                        0,
+                        maxLeft
+                    )
+                )
+            );
+
+        newTop =
+            Math.max(
+                0,
+                Math.min(
+                    newTop,
+                    Math.max(
+                        0,
+                        maxTop
+                    )
+                )
+            );
+
+        selectedText.style.left =
+            newLeft + "px";
+
+        selectedText.style.top =
+            newTop + "px";
+
+    }
+);
+
+
+document.addEventListener(
+    "pointerup",
+    function(event){
+
+        if(!screenDragging){
+            return;
+        }
+
+        screenDragging =
+            false;
+
+        try{
+
+            document.documentElement.releasePointerCapture(
+                event.pointerId
+            );
+
+        }catch(error){}
+
+    }
+);
+
+
+document.addEventListener(
+    "pointercancel",
+    function(){
+
+        screenDragging =
+            false;
+
+    }
+);
 
 
 /* =================================================
@@ -1674,26 +1273,17 @@ function changeSelectedFontSize(
 ){
 
     if(!selectedText){
-
         return;
-
     }
-
 
     const currentSize =
         parseFloat(
             selectedText.dataset.fontSize
         ) || detectedFontSize;
 
-
     let newSize =
         currentSize *
         multiplier;
-
-
-    /*
-     * الحد الأدنى والأقصى.
-     */
 
     newSize =
         Math.max(
@@ -1704,10 +1294,8 @@ function changeSelectedFontSize(
             )
         );
 
-
     selectedText.dataset.fontSize =
         newSize;
-
 
     selectedText.style.fontSize =
         (
@@ -1717,11 +1305,6 @@ function changeSelectedFontSize(
 
 }
 
-
-/* =================================================
-   تكبير
-================================================= */
-
 increaseSizeButton.addEventListener(
     "click",
     function(event){
@@ -1730,18 +1313,12 @@ increaseSizeButton.addEventListener(
 
         event.stopPropagation();
 
-
         changeSelectedFontSize(
             1.10
         );
 
     }
 );
-
-
-/* =================================================
-   تصغير
-================================================= */
 
 decreaseSizeButton.addEventListener(
     "click",
@@ -1751,18 +1328,12 @@ decreaseSizeButton.addEventListener(
 
         event.stopPropagation();
 
-
         changeSelectedFontSize(
             0.90
         );
 
     }
 );
-
-
-/* =================================================
-   حذف جميع الجمل
-================================================= */
 
 function clearTexts(){
 
@@ -1778,38 +1349,20 @@ function clearTexts(){
             }
         );
 
-
     selectedText =
         null;
-
 
     updateControls();
 
 }
 
 
-/* =================================================
-   الضغط على الصورة نفسها
-================================================= */
+/*
+ * عند الضغط على الصورة أو مساحة العمل
+ * لا نلغي تحديد الجملة؛ لأن الضغط من هناك
+ * أصبح يستخدم لتحريك الجملة المحددة.
+ */
 
-formImage.addEventListener(
-    "pointerdown",
-    function(){
-
-        /*
-         * إذا ضغط المستخدم على مكان
-         * فارغ من الصورة، نلغي التحديد.
-         */
-
-        unselectText();
-
-    }
-);
-
-
-/* =================================================
-   حفظ الصورة
-================================================= */
 
 saveButton.addEventListener(
     "click",
@@ -1822,9 +1375,7 @@ saveButton.addEventListener(
             );
 
             return;
-
         }
-
 
         if(
             typeof html2canvas !==
@@ -1836,141 +1387,79 @@ saveButton.addEventListener(
             );
 
             return;
-
         }
-
-
-        /*
-         * حفظ الجملة المحددة
-         * حتى نعيد تحديدها بعد الحفظ.
-         */
 
         const oldSelectedText =
             selectedText;
 
-
-        /*
-         * إزالة إطار التحديد
-         * قبل أخذ الصورة.
-         */
-
         unselectText();
-
 
         status.textContent =
             "⏳ جاري حفظ الصورة...";
-
 
         try{
 
             updateDisplayScale();
 
-
-            /*
-             * حساب التكبير المطلوب
-             * حتى تكون النتيجة بالحجم الأصلي.
-             */
-
             const captureScale =
                 formImage.naturalWidth /
                 formImage.offsetWidth;
-
-
-            /*
-             * تصوير الصورة والنصوص
-             * كما تظهر فعلياً في المتصفح.
-             *
-             * لا نستخدم fillText هنا،
-             * حتى لا يتغير مكان الإيموجي.
-             */
 
             const capturedCanvas =
                 await html2canvas(
                     canvasArea,
                     {
-
                         backgroundColor:null,
-
                         scale:
                             captureScale,
-
                         useCORS:true,
-
                         allowTaint:false,
-
                         logging:false,
-
                         imageTimeout:0
-
                     }
                 );
-
-
-            /*
-             * Canvas نهائي بالحجم الأصلي.
-             */
 
             const outputCanvas =
                 document.createElement(
                     "canvas"
                 );
 
-
             outputCanvas.width =
                 formImage.naturalWidth;
 
-
             outputCanvas.height =
                 formImage.naturalHeight;
-
 
             const outputCtx =
                 outputCanvas.getContext(
                     "2d"
                 );
 
-
-            /*
-             * نقل الصورة النهائية.
-             */
-
             outputCtx.drawImage(
                 capturedCanvas,
-
                 0,
                 0,
-
                 outputCanvas.width,
                 outputCanvas.height
             );
-
-
-            /*
-             * إنشاء رابط التحميل.
-             */
 
             const link =
                 document.createElement(
                     "a"
                 );
 
-
             link.download =
                 "filled-form.png";
-
 
             link.href =
                 outputCanvas.toDataURL(
                     "image/png"
                 );
 
-
             link.click();
-
 
             status.textContent =
                 "✅ تم حفظ الصورة بنجاح.";
-
 
         }catch(error){
 
@@ -1979,22 +1468,14 @@ saveButton.addEventListener(
                 error
             );
 
-
             status.textContent =
                 "❌ حدث خطأ أثناء حفظ الصورة.";
-
 
             alert(
                 "حدث خطأ أثناء حفظ الصورة. حاول مرة أخرى."
             );
 
         }
-
-
-        /*
-         * إعادة تحديد الجملة
-         * التي كانت محددة قبل الحفظ.
-         */
 
         if(
             oldSelectedText &&
@@ -2012,10 +1493,6 @@ saveButton.addEventListener(
     }
 );
 
-
-/* =================================================
-   إغلاق مربع الكتابة عند الضغط خارجه
-================================================= */
 
 document.addEventListener(
     "pointerdown",
@@ -2039,23 +1516,15 @@ document.addEventListener(
 );
 
 
-/* =================================================
-   تغيير حجم الشاشة
-================================================= */
-
 window.addEventListener(
     "resize",
     function(){
 
         if(!imageLoaded){
-
             return;
-
         }
 
-
         updateDisplayScale();
-
 
         document
             .querySelectorAll(
@@ -2070,7 +1539,6 @@ window.addEventListener(
                         ) ||
                         detectedFontSize;
 
-
                     item.style.fontSize =
                         (
                             size *
@@ -2082,11 +1550,6 @@ window.addEventListener(
 
     }
 );
-
-
-/* =================================================
-   البداية
-================================================= */
 
 updateControls();
 
