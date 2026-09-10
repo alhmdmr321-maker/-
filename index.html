@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>تعبئة الصور</title>
+<title>تعبئة النموذج</title>
+
+<!-- OCR لقياس حجم الكتابة الموجودة بالصورة -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 * {
@@ -78,6 +81,11 @@ input[type="file"] {
     font-size: 14px;
 }
 
+
+/* =========================
+   منطقة الصورة
+========================= */
+
 .workspace {
     padding: 15px;
     overflow: auto;
@@ -98,91 +106,102 @@ input[type="file"] {
 }
 
 
-/* ==========================
-   مستطيل الكتابة
-========================== */
+/* =========================
+   مربع الكتابة
+========================= */
 
 #writingBox {
     position: fixed;
+
     left: 50%;
     top: 50%;
+
     transform: translate(-50%, -50%);
-    
+
     width: min(90vw, 500px);
-    
+
     background: white;
+
     border: 2px solid #1976d2;
+
     border-radius: 12px;
-    
+
     padding: 8px;
-    
+
     display: none;
-    
+
     z-index: 5000;
-    
+
     box-shadow: 0 5px 25px rgba(0,0,0,.3);
-    
+
     direction: ltr;
 }
 
 #writingInput {
     width: calc(100% - 55px);
+
     min-height: 48px;
-    
+
     border: none;
+
     outline: none;
-    
+
     font-size: 18px;
+
     padding: 8px;
-    
+
     resize: none;
-    
+
     direction: auto;
 }
 
 #confirmText {
     width: 45px;
     height: 45px;
-    
+
     background: #16803c;
+
     color: white;
-    
+
     border-radius: 50%;
-    
+
     font-size: 23px;
+
     font-weight: bold;
-    
+
     padding: 0;
 }
 
 
-/* ==========================
-   النص الموجود على الصورة
-========================== */
+/* =========================
+   النص الموجود فوق الصورة
+========================= */
 
 .textItem {
     position: absolute;
-    
+
     min-width: 30px;
     min-height: 30px;
-    
-    padding: 3px 6px;
-    
+
+    padding: 2px 4px;
+
     cursor: move;
-    
+
     user-select: none;
+
     touch-action: none;
-    
-    font-size: 22px;
+
     color: #000;
-    
+
     background: transparent;
-    
+
     z-index: 20;
-    
+
     white-space: pre-wrap;
-    
+
     direction: auto;
+
+    line-height: 1.15;
 }
 
 .textItem.selected {
@@ -192,21 +211,25 @@ input[type="file"] {
 
 .deleteText {
     position: absolute;
+
     top: -28px;
     right: -5px;
-    
+
     background: #d32f2f;
     color: white;
-    
+
     border: none;
+
     border-radius: 50%;
-    
+
     width: 25px;
     height: 25px;
-    
+
     font-size: 14px;
-    
+
     display: none;
+
+    padding: 0;
 }
 
 .textItem.selected .deleteText {
@@ -214,24 +237,32 @@ input[type="file"] {
 }
 
 
-/* ==========================
-   تعليمات
-========================== */
+/* =========================
+   التعليمات
+========================= */
 
 .help {
     background: white;
+
     margin: 10px auto;
+
     padding: 10px;
+
     border-radius: 10px;
+
     max-width: 700px;
+
     text-align: center;
+
     color: #555;
+
     font-size: 14px;
 }
 </style>
 </head>
 
 <body>
+
 
 <div class="topbar">
     <h2>تعبئة النموذج</h2>
@@ -242,12 +273,14 @@ input[type="file"] {
 
     <label class="uploadButton">
         📷 اختيار صورة
+
         <input
             type="file"
             id="imageInput"
             accept="image/*"
         >
     </label>
+
 
     <button
         class="addButton"
@@ -257,6 +290,7 @@ input[type="file"] {
         ✏️ إضافة كتابة
     </button>
 
+
     <button
         class="saveButton"
         id="saveButton"
@@ -264,6 +298,7 @@ input[type="file"] {
     >
         💾 حفظ الصورة
     </button>
+
 
     <div id="status">
         اختر صورة للبدء
@@ -273,7 +308,7 @@ input[type="file"] {
 
 
 <div class="help">
-    بعد كتابة النص اضغط ✓، ثم اسحب الجملة وضعها في المكان الذي تريده على الصورة.
+    اكتب النص ثم اضغط ✓، وبعدها اسحب الجملة إلى المكان الذي تريده.
 </div>
 
 
@@ -291,9 +326,9 @@ input[type="file"] {
 </div>
 
 
-<!-- ==========================
-     مربع الكتابة
-========================== -->
+<!-- =========================
+     مستطيل الكتابة
+========================= -->
 
 <div id="writingBox">
 
@@ -303,10 +338,10 @@ input[type="file"] {
         rows="2"
     ></textarea>
 
+
     <button
         id="confirmText"
         type="button"
-        aria-label="تأكيد"
     >
         ✓
     </button>
@@ -315,6 +350,7 @@ input[type="file"] {
 
 
 <script>
+
 
 const imageInput =
     document.getElementById("imageInput");
@@ -351,9 +387,23 @@ let selectedText = null;
 let textCounter = 0;
 
 
-/* ==========================
+/*
+ * حجم الخط المكتشف من الصورة
+ * بوحدة بكسل في الصورة الأصلية.
+ */
+let detectedFontSize = 22;
+
+
+/*
+ * معامل عرض الصورة على الشاشة
+ * مقارنة بالصورة الأصلية.
+ */
+let displayScale = 1;
+
+
+/* ==================================================
    تحميل الصورة
-========================== */
+================================================== */
 
 imageInput.addEventListener(
     "change",
@@ -364,24 +414,25 @@ imageInput.addEventListener(
 
         if (!file) return;
 
+
         const reader =
             new FileReader();
+
 
         reader.onload =
             function(e) {
 
                 formImage.onload =
-                    function() {
+                    async function() {
 
                         imageLoaded = true;
 
                         canvasArea.style.display =
                             "block";
 
+
                         /*
-                         * عرض الصورة بحجم مناسب
-                         * للشاشة مع الحفاظ على
-                         * أبعادها.
+                         * جعل الصورة مناسبة للشاشة.
                          */
 
                         const maxWidth =
@@ -390,23 +441,46 @@ imageInput.addEventListener(
                                 formImage.naturalWidth
                             );
 
+
                         formImage.style.width =
                             maxWidth + "px";
+
 
                         formImage.style.height =
                             "auto";
 
+
+                        updateDisplayScale();
+
+
                         clearTexts();
 
+
                         status.textContent =
-                            "الصورة جاهزة. اضغط «إضافة كتابة».";
+                            "⏳ جاري قراءة حجم الخط الموجود في الصورة...";
+
+
+                        /*
+                         * قراءة الصورة وقياس
+                         * أحجام الكلمات.
+                         */
+
+                        await detectFontSize(
+                            e.target.result
+                        );
+
+
+                        status.textContent =
+                            "✅ تم تحليل حجم الخط. اضغط «إضافة كتابة».";
 
                     };
+
 
                 formImage.src =
                     e.target.result;
 
             };
+
 
         reader.readAsDataURL(file);
 
@@ -414,9 +488,202 @@ imageInput.addEventListener(
 );
 
 
-/* ==========================
-   فتح مربع الكتابة
-========================== */
+/* ==================================================
+   حساب معامل التصغير
+================================================== */
+
+function updateDisplayScale() {
+
+    if (
+        !formImage.naturalWidth ||
+        !formImage.offsetWidth
+    ) {
+        displayScale = 1;
+        return;
+    }
+
+
+    displayScale =
+        formImage.offsetWidth /
+        formImage.naturalWidth;
+
+}
+
+
+/* ==================================================
+   قراءة حجم الخط من الصورة
+================================================== */
+
+async function detectFontSize(imageSource) {
+
+    try {
+
+        /*
+         * تشغيل OCR.
+         *
+         * الألمانية مناسبة للنموذج الحالي،
+         * والإنجليزية تساعد مع النماذج الأخرى.
+         */
+
+        const result =
+            await Tesseract.recognize(
+                imageSource,
+                "deu+eng"
+            );
+
+
+        const words =
+            result.data.words || [];
+
+
+        /*
+         * أخذ ارتفاع الكلمات التي
+         * استطاع OCR قراءتها.
+         */
+
+        const heights = [];
+
+
+        for (const word of words) {
+
+            if (!word.text) continue;
+
+
+            const width =
+                word.bbox.x1 -
+                word.bbox.x0;
+
+
+            const height =
+                word.bbox.y1 -
+                word.bbox.y0;
+
+
+            /*
+             * تجاهل النتائج غير المنطقية.
+             */
+
+            if (height < 6) continue;
+
+            if (height > 100) continue;
+
+            if (width < 3) continue;
+
+
+            /*
+             * نتجنب الكلمات القصيرة جداً
+             * أو النتائج الغريبة.
+             */
+
+            heights.push(height);
+
+        }
+
+
+        if (heights.length === 0) {
+
+            detectedFontSize = 22;
+
+            return;
+
+        }
+
+
+        /*
+         * ترتيب الأحجام.
+         */
+
+        heights.sort(
+            (a,b) => a - b
+        );
+
+
+        /*
+         * الوسيط Median أكثر استقراراً
+         * من المتوسط.
+         */
+
+        const middle =
+            Math.floor(
+                heights.length / 2
+            );
+
+
+        let median;
+
+
+        if (
+            heights.length % 2 === 0
+        ) {
+
+            median =
+                (
+                    heights[middle - 1] +
+                    heights[middle]
+                ) / 2;
+
+        } else {
+
+            median =
+                heights[middle];
+
+        }
+
+
+        /*
+         * ارتفاع bbox للكلمة ليس دائماً
+         * نفس حجم CSS font.
+         *
+         * لذلك نستخدم معامل صغير.
+         */
+
+        detectedFontSize =
+            median * 1.05;
+
+
+        /*
+         * حدود أمان.
+         */
+
+        detectedFontSize =
+            Math.max(
+                10,
+                Math.min(
+                    detectedFontSize,
+                    60
+                )
+            );
+
+
+        console.log(
+            "Detected font size:",
+            detectedFontSize
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "OCR error:",
+            error
+        );
+
+
+        /*
+         * إذا فشل OCR نستخدم
+         * قيمة احتياطية.
+         */
+
+        detectedFontSize = 22;
+
+    }
+
+}
+
+
+/* ==================================================
+   زر إضافة كتابة
+================================================== */
 
 addTextButton.addEventListener(
     "click",
@@ -424,10 +691,14 @@ addTextButton.addEventListener(
 
         if (!imageLoaded) {
 
-            alert("اختر صورة أولاً.");
+            alert(
+                "اختر صورة أولاً."
+            );
 
             return;
+
         }
+
 
         openWritingBox();
 
@@ -435,9 +706,9 @@ addTextButton.addEventListener(
 );
 
 
-/* ==========================
-   فتح نافذة الكتابة
-========================== */
+/* ==================================================
+   فتح مستطيل الكتابة
+================================================== */
 
 function openWritingBox() {
 
@@ -451,9 +722,9 @@ function openWritingBox() {
 }
 
 
-/* ==========================
-   تأكيد النص
-========================== */
+/* ==================================================
+   تأكيد الكتابة
+================================================== */
 
 confirmText.addEventListener(
     "click",
@@ -462,14 +733,18 @@ confirmText.addEventListener(
         const text =
             writingInput.value.trim();
 
+
         if (!text) {
 
             writingInput.focus();
 
             return;
+
         }
 
+
         createTextItem(text);
+
 
         writingBox.style.display =
             "none";
@@ -478,9 +753,9 @@ confirmText.addEventListener(
 );
 
 
-/* ==========================
-   Enter + Ctrl/Command
-========================== */
+/* ==================================================
+   Ctrl + Enter للتأكيد
+================================================== */
 
 writingInput.addEventListener(
     "keydown",
@@ -501,41 +776,75 @@ writingInput.addEventListener(
 );
 
 
-/* ==========================
-   إنشاء الجملة على الصورة
-========================== */
+/* ==================================================
+   إنشاء النص
+================================================== */
 
 function createTextItem(text) {
 
     const item =
         document.createElement("div");
 
+
     item.className =
         "textItem";
 
-    item.textContent =
-        text;
 
     item.dataset.id =
         ++textCounter;
 
 
     /*
-     * زر حذف صغير يظهر فقط
-     * عندما يتم تحديد النص.
+     * نخزن النص بشكل منفصل حتى
+     * لا يدخل زر الحذف ضمن النص.
+     */
+
+    const textNode =
+        document.createTextNode(text);
+
+
+    item.appendChild(textNode);
+
+
+    /*
+     * حجم الخط الطبيعي للصورة الأصلية.
+     */
+
+    item.dataset.fontSize =
+        detectedFontSize;
+
+
+    /*
+     * تحويل الحجم إلى حجم مناسب
+     * للصورة المعروضة على الشاشة.
+     */
+
+    item.style.fontSize =
+        (
+            detectedFontSize *
+            displayScale
+        ) + "px";
+
+
+    /*
+     * زر الحذف.
      */
 
     const deleteButton =
         document.createElement("button");
 
+
     deleteButton.className =
         "deleteText";
+
 
     deleteButton.textContent =
         "×";
 
+
     deleteButton.type =
         "button";
+
 
     deleteButton.addEventListener(
         "pointerdown",
@@ -545,6 +854,7 @@ function createTextItem(text) {
 
         }
     );
+
 
     deleteButton.addEventListener(
         "click",
@@ -560,18 +870,21 @@ function createTextItem(text) {
     );
 
 
-    item.appendChild(deleteButton);
+    item.appendChild(
+        deleteButton
+    );
+
 
     canvasArea.appendChild(item);
 
 
     /*
-     * نضع النص في بداية الصورة
-     * ويمكن للمستخدم سحبه مباشرة.
+     * مكان البداية.
      */
 
     item.style.left =
         "20px";
+
 
     item.style.top =
         "20px";
@@ -579,26 +892,35 @@ function createTextItem(text) {
 
     enableDragging(item);
 
+
     selectText(item);
 
 }
 
 
-/* ==========================
+/* ==================================================
    تحديد النص
-========================== */
+================================================== */
 
 function selectText(item) {
 
     document
         .querySelectorAll(".textItem")
-        .forEach(el => {
+        .forEach(
+            function(el) {
 
-            el.classList.remove("selected");
+                el.classList.remove(
+                    "selected"
+                );
 
-        });
+            }
+        );
 
-    item.classList.add("selected");
+
+    item.classList.add(
+        "selected"
+    );
+
 
     selectedText =
         item;
@@ -606,18 +928,20 @@ function selectText(item) {
 }
 
 
-/* ==========================
-   السحب باللمس أو الماوس
-========================== */
+/* ==================================================
+   تحريك النص
+================================================== */
 
 function enableDragging(item) {
 
     let dragging = false;
 
     let startX = 0;
+
     let startY = 0;
 
     let originalLeft = 0;
+
     let originalTop = 0;
 
 
@@ -625,28 +949,29 @@ function enableDragging(item) {
         "pointerdown",
         function(event) {
 
-            /*
-             * إذا ضغط المستخدم على
-             * زر الحذف لا نبدأ السحب.
-             */
-
             if (
                 event.target.classList.contains(
                     "deleteText"
                 )
             ) {
+
                 return;
+
             }
 
 
             event.preventDefault();
 
+
             selectText(item);
+
 
             dragging = true;
 
+
             startX =
                 event.clientX;
+
 
             startY =
                 event.clientY;
@@ -656,6 +981,7 @@ function enableDragging(item) {
                 parseFloat(
                     item.style.left
                 ) || 0;
+
 
             originalTop =
                 parseFloat(
@@ -677,9 +1003,11 @@ function enableDragging(item) {
 
             if (!dragging) return;
 
+
             const dx =
                 event.clientX -
                 startX;
+
 
             const dy =
                 event.clientY -
@@ -689,17 +1017,15 @@ function enableDragging(item) {
             let newLeft =
                 originalLeft + dx;
 
+
             let newTop =
                 originalTop + dy;
 
 
-            /*
-             * إبقاء النص داخل الصورة.
-             */
-
             const maxLeft =
                 formImage.offsetWidth -
                 item.offsetWidth;
+
 
             const maxTop =
                 formImage.offsetHeight -
@@ -711,22 +1037,30 @@ function enableDragging(item) {
                     0,
                     Math.min(
                         newLeft,
-                        Math.max(0, maxLeft)
+                        Math.max(
+                            0,
+                            maxLeft
+                        )
                     )
                 );
+
 
             newTop =
                 Math.max(
                     0,
                     Math.min(
                         newTop,
-                        Math.max(0, maxTop)
+                        Math.max(
+                            0,
+                            maxTop
+                        )
                     )
                 );
 
 
             item.style.left =
                 newLeft + "px";
+
 
             item.style.top =
                 newTop + "px";
@@ -740,6 +1074,7 @@ function enableDragging(item) {
         function(event) {
 
             dragging = false;
+
 
             try {
 
@@ -765,58 +1100,31 @@ function enableDragging(item) {
 }
 
 
-/* ==========================
-   الضغط خارج النص
-========================== */
-
-canvasArea.addEventListener(
-    "pointerdown",
-    function(event) {
-
-        if (
-            event.target === formImage
-        ) {
-
-            document
-                .querySelectorAll(".textItem")
-                .forEach(el => {
-
-                    el.classList.remove(
-                        "selected"
-                    );
-
-                });
-
-            selectedText = null;
-
-        }
-
-    }
-);
-
-
-/* ==========================
-   حذف النصوص القديمة
-========================== */
+/* ==================================================
+   حذف كل النصوص
+================================================== */
 
 function clearTexts() {
 
     document
         .querySelectorAll(".textItem")
-        .forEach(item => {
+        .forEach(
+            function(item) {
 
-            item.remove();
+                item.remove();
 
-        });
+            }
+        );
+
 
     selectedText = null;
 
 }
 
 
-/* ==========================
+/* ==================================================
    حفظ الصورة
-========================== */
+================================================== */
 
 saveButton.addEventListener(
     "click",
@@ -824,17 +1132,22 @@ saveButton.addEventListener(
 
         if (!imageLoaded) {
 
-            alert("اختر صورة أولاً.");
+            alert(
+                "اختر صورة أولاً."
+            );
 
             return;
+
         }
 
 
         const canvas =
             document.createElement("canvas");
 
+
         canvas.width =
             formImage.naturalWidth;
+
 
         canvas.height =
             formImage.naturalHeight;
@@ -845,7 +1158,7 @@ saveButton.addEventListener(
 
 
         /*
-         * الصورة الأصلية.
+         * رسم الصورة الأصلية.
          */
 
         ctx.drawImage(
@@ -858,13 +1171,14 @@ saveButton.addEventListener(
 
 
         /*
-         * نسبة الصورة الأصلية
-         * إلى الصورة المعروضة.
+         * معامل التحويل من الشاشة
+         * إلى الصورة الأصلية.
          */
 
         const scaleX =
             formImage.naturalWidth /
             formImage.offsetWidth;
+
 
         const scaleY =
             formImage.naturalHeight /
@@ -872,63 +1186,78 @@ saveButton.addEventListener(
 
 
         /*
-         * رسم جميع النصوص.
+         * رسم النصوص.
          */
 
         document
             .querySelectorAll(".textItem")
-            .forEach(item => {
+            .forEach(
+                function(item) {
 
-                const text =
-                    item.childNodes[0]
-                        ?.textContent || "";
+                    /*
+                     * أول Child هو النص.
+                     */
 
-                const x =
-                    parseFloat(
-                        item.style.left
-                    ) * scaleX;
-
-                const y =
-                    parseFloat(
-                        item.style.top
-                    ) * scaleY;
+                    const text =
+                        item.childNodes[0]
+                            ?.textContent || "";
 
 
-                /*
-                 * حجم الخط يتناسب
-                 * مع حجم الصورة الأصلية.
-                 */
-
-                const fontSize =
-                    22 * scaleX;
+                    if (!text) return;
 
 
-                ctx.fillStyle =
-                    "#000000";
-
-                ctx.font =
-                    fontSize +
-                    "px Arial";
-
-                ctx.textBaseline =
-                    "top";
-
-                ctx.direction =
-                    "ltr";
+                    const x =
+                        (
+                            parseFloat(
+                                item.style.left
+                            ) || 0
+                        ) * scaleX;
 
 
-                /*
-                 * يدعم النص العربي والألماني
-                 * بشكل طبيعي.
-                 */
+                    const y =
+                        (
+                            parseFloat(
+                                item.style.top
+                            ) || 0
+                        ) * scaleY;
 
-                ctx.fillText(
-                    text,
-                    x + (4 * scaleX),
-                    y + (3 * scaleY)
-                );
 
-            });
+                    /*
+                     * نستخدم حجم الخط الذي
+                     * اكتشفناه من الصورة الأصلية.
+                     */
+
+                    const fontSize =
+                        parseFloat(
+                            item.dataset.fontSize
+                        ) || detectedFontSize;
+
+
+                    ctx.fillStyle =
+                        "#000000";
+
+
+                    ctx.font =
+                        fontSize +
+                        "px Arial";
+
+
+                    ctx.textBaseline =
+                        "top";
+
+
+                    ctx.direction =
+                        "ltr";
+
+
+                    ctx.fillText(
+                        text,
+                        x + 2,
+                        y + 1
+                    );
+
+                }
+            );
 
 
         /*
@@ -938,28 +1267,30 @@ saveButton.addEventListener(
         const link =
             document.createElement("a");
 
+
         link.download =
             "filled-form.png";
+
 
         link.href =
             canvas.toDataURL(
                 "image/png"
             );
 
+
         link.click();
 
 
         status.textContent =
-            "✅ تم حفظ الصورة النهائية.";
+            "✅ تم حفظ الصورة بالحجم الصحيح للنص.";
 
     }
 );
 
 
-/* ==========================
-   إغلاق مربع الكتابة
-   عند الضغط خارج المستطيل
-========================== */
+/* ==================================================
+   الضغط خارج مربع الكتابة
+================================================== */
 
 document.addEventListener(
     "pointerdown",
@@ -975,6 +1306,49 @@ document.addEventListener(
                 "none";
 
         }
+
+    }
+);
+
+
+/* ==================================================
+   عند تغيير حجم الشاشة
+================================================== */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (!imageLoaded) return;
+
+
+        updateDisplayScale();
+
+
+        /*
+         * تحديث حجم النصوص الموجودة
+         * حسب حجم الصورة الجديد.
+         */
+
+        document
+            .querySelectorAll(".textItem")
+            .forEach(
+                function(item) {
+
+                    const naturalSize =
+                        parseFloat(
+                            item.dataset.fontSize
+                        ) || detectedFontSize;
+
+
+                    item.style.fontSize =
+                        (
+                            naturalSize *
+                            displayScale
+                        ) + "px";
+
+                }
+            );
 
     }
 );
