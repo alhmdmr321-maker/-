@@ -1,1560 +1,963 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>تعبئة النموذج</title>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2196f3">
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
-
-*{
-    box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
-    margin:0;
-    background:#eeeeee;
-    font-family:
-        Arial,
-        "Segoe UI Emoji",
-        "Noto Color Emoji",
-        sans-serif;
-    direction:rtl;
+margin:0;
+background:#eee;
+font-family:Arial,"Segoe UI Emoji","Noto Color Emoji",sans-serif;
+direction:rtl;
 }
 
 .topbar{
-    background:#111111;
-    color:#ffffff;
-    padding:14px;
-    text-align:center;
+background:#111;
+color:#fff;
+padding:14px;
+text-align:center;
 }
 
 .topbar h2{
-    margin:0;
-    font-size:22px;
+margin:0;
+font-size:22px;
 }
 
 .toolbar{
-    background:#ffffff;
-    padding:12px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    position:sticky;
-    top:0;
-    z-index:1000;
-    box-shadow:
-        0 2px 8px rgba(0,0,0,.15);
+background:#fff;
+padding:12px;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
+position:sticky;
+top:0;
+z-index:1000;
+box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
 
-button,
-.uploadButton{
-    border:0;
-    border-radius:10px;
-    padding:11px 17px;
-    font-size:16px;
-    cursor:pointer;
-    font-family:
-        Arial,
-        "Segoe UI Emoji",
-        "Noto Color Emoji",
-        sans-serif;
+button,.uploadButton{
+border:0;
+border-radius:10px;
+padding:11px 17px;
+font-size:16px;
+cursor:pointer;
+font-family:Arial,"Segoe UI Emoji","Noto Color Emoji",sans-serif;
 }
 
 .uploadButton{
-    background:#1976d2;
-    color:#ffffff;
+background:#1976d2;
+color:#fff;
 }
 
 .addButton{
-    background:#673ab7;
-    color:#ffffff;
+background:#673ab7;
+color:#fff;
 }
 
 .saveButton{
-    background:#16803c;
-    color:#ffffff;
+background:#16803c;
+color:#fff;
 }
 
 .deleteToolbarButton{
-    background:#d32f2f;
-    color:#ffffff;
-    display:none;
-    min-width:90px;
+background:#d32f2f;
+color:#fff;
+display:none;
+min-width:90px;
 }
 
 .deleteToolbarButton.show{
-    display:block;
+display:block;
 }
 
-input[type="file"]{
-    display:none;
+input[type=file]{
+display:none;
 }
 
 #status{
-    width:100%;
-    text-align:center;
-    color:#555555;
-    font-size:14px;
+width:100%;
+text-align:center;
+color:#555;
+font-size:14px;
 }
 
 .help{
-    background:#ffffff;
-    margin:10px auto;
-    padding:12px 15px;
-    border-radius:12px;
-    max-width:760px;
-    text-align:center;
-    color:#555555;
-    font-size:15px;
-    line-height:1.8;
+background:#fff;
+margin:10px auto;
+padding:12px 15px;
+border-radius:12px;
+max-width:760px;
+text-align:center;
+color:#555;
+font-size:15px;
+line-height:1.8;
 }
 
 .workspace{
-    padding:15px;
-    overflow:auto;
+padding:15px;
+overflow:auto;
 }
 
 #canvasArea{
-    position:relative;
-    margin:auto;
-    width:fit-content;
-    display:none;
+position:relative;
+margin:auto;
+width:fit-content;
+display:none;
 }
 
 #formImage{
-    display:block;
-    max-width:none;
-    height:auto;
-    user-select:none;
-    -webkit-user-drag:none;
-    pointer-events:auto;
+display:block;
+max-width:none;
+height:auto;
+user-select:none;
+-webkit-user-drag:none;
+pointer-events:auto;
 }
 
 #writingBox{
-    position:fixed;
-    left:50%;
-    top:50%;
-    transform:
-        translate(-50%,-50%);
-    width:min(90vw,500px);
-    background:#ffffff;
-    border:2px solid #1976d2;
-    border-radius:12px;
-    padding:8px;
-    display:none;
-    align-items:center;
-    z-index:5000;
-    box-shadow:
-        0 5px 25px rgba(0,0,0,.3);
-    direction:ltr;
+position:fixed;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+width:min(90vw,500px);
+background:#fff;
+border:2px solid #1976d2;
+border-radius:12px;
+padding:8px;
+display:none;
+align-items:center;
+z-index:5000;
+box-shadow:0 5px 25px rgba(0,0,0,.3);
+direction:ltr;
 }
 
 #writingInput{
-    width:calc(100% - 55px);
-    min-height:48px;
-    border:0;
-    outline:0;
-    font-size:18px;
-    padding:8px;
-    resize:none;
-    direction:auto;
-    unicode-bidi:plaintext;
-    font-family:
-        Arial,
-        "Segoe UI Emoji",
-        "Noto Color Emoji",
-        sans-serif;
+width:calc(100% - 55px);
+min-height:48px;
+border:0;
+outline:0;
+font-size:18px;
+padding:8px;
+resize:none;
+direction:auto;
+unicode-bidi:plaintext;
+font-family:Arial,"Segoe UI Emoji","Noto Color Emoji",sans-serif;
 }
 
 #confirmText{
-    width:45px;
-    height:45px;
-    padding:0;
-    background:#16803c;
-    color:#ffffff;
-    border-radius:50%;
-    font-size:23px;
-    font-weight:bold;
-    flex-shrink:0;
+width:45px;
+height:45px;
+padding:0;
+background:#16803c;
+color:#fff;
+border-radius:50%;
+font-size:23px;
+font-weight:bold;
+flex-shrink:0;
 }
 
 .textItem{
-    position:absolute;
-    min-width:30px;
-    min-height:30px;
-    padding:2px 4px;
-    color:#000000;
-    background:transparent;
-    font-family:
-        Arial,
-        "Segoe UI Emoji",
-        "Noto Color Emoji",
-        sans-serif;
-    white-space:pre-wrap;
-    direction:auto;
-    unicode-bidi:plaintext;
-    line-height:1.15;
-    z-index:20;
-    cursor:move;
-    user-select:none;
-    -webkit-user-select:none;
-    -webkit-touch-callout:none;
-    touch-action:none;
-    pointer-events:auto;
+position:absolute;
+min-width:30px;
+min-height:30px;
+padding:2px 4px;
+color:#000;
+background:transparent;
+font-family:Arial,"Segoe UI Emoji","Noto Color Emoji",sans-serif;
+white-space:pre-wrap;
+direction:auto;
+unicode-bidi:plaintext;
+line-height:1.15;
+z-index:20;
+cursor:move;
+user-select:none;
+-webkit-user-select:none;
+-webkit-touch-callout:none;
+touch-action:none;
+pointer-events:auto;
 }
 
 .textItem.selected{
-    outline:2px dashed #1976d2;
-    border-radius:3px;
+outline:2px dashed #1976d2;
+border-radius:3px;
 }
 
 .sizeControl{
-    position:fixed;
-    top:50%;
-    transform:
-        translateY(-50%);
-    width:48px;
-    height:48px;
-    padding:0;
-    border:0;
-    border-radius:50%;
-    background:#1976d2;
-    color:#ffffff;
-    font-size:29px;
-    font-weight:bold;
-    line-height:48px;
-    z-index:3000;
-    box-shadow:
-        0 3px 10px rgba(0,0,0,.25);
+position:fixed;
+top:50%;
+transform:translateY(-50%);
+width:48px;
+height:48px;
+padding:0;
+border:0;
+border-radius:50%;
+background:#1976d2;
+color:#fff;
+font-size:29px;
+font-weight:bold;
+line-height:48px;
+z-index:3000;
+box-shadow:0 3px 10px rgba(0,0,0,.25);
 }
 
 .sizeControl:active{
-    transform:
-        translateY(-50%)
-        scale(.92);
+transform:translateY(-50%) scale(.92);
 }
 
-#increaseSize{
-    left:10px;
-}
+#increaseSize{left:10px}
+#decreaseSize{right:10px}
 
-#decreaseSize{
-    right:10px;
-}
-
-.sizeControl:disabled{
-    opacity:.35;
-}
+.sizeControl:disabled{opacity:.35}
 
 @media(max-width:600px){
-
-    .toolbar{
-        gap:7px;
-        padding:9px;
-    }
-
-    button,
-    .uploadButton{
-        font-size:15px;
-        padding:10px 13px;
-    }
-
-    .help{
-        font-size:14px;
-        margin:8px;
-    }
-
+.toolbar{gap:7px;padding:9px}
+button,.uploadButton{font-size:15px;padding:10px 13px}
+.help{font-size:14px;margin:8px}
 }
-
 </style>
-
 </head>
 
 <body>
 
 <div class="topbar">
-
-    <h2>
-        تعبئة النموذج
-    </h2>
-
+<h2>تعبئة النموذج</h2>
 </div>
 
 <div class="toolbar">
 
-    <label class="uploadButton">
+<label class="uploadButton">
+📷 اختيار صورة
+<input type="file" id="imageInput" accept="image/*">
+</label>
 
-        📷 اختيار صورة
+<button class="addButton" id="addTextButton" type="button">
+✏️ إضافة كتابة
+</button>
 
-        <input
-            type="file"
-            id="imageInput"
-            accept="image/*">
+<button class="saveButton" id="saveButton" type="button">
+💾 حفظ الصورة
+</button>
 
-    </label>
+<button class="deleteToolbarButton" id="deleteSelectedButton" type="button">
+حذف
+</button>
 
-    <button
-        class="addButton"
-        id="addTextButton"
-        type="button">
-
-        ✏️ إضافة كتابة
-
-    </button>
-
-    <button
-        class="saveButton"
-        id="saveButton"
-        type="button">
-
-        💾 حفظ الصورة
-
-    </button>
-
-    <button
-        class="deleteToolbarButton"
-        id="deleteSelectedButton"
-        type="button">
-
-        حذف
-
-    </button>
-
-    <div id="status">
-
-        اختر صورة للبدء
-
-    </div>
+<div id="status">اختر صورة للبدء</div>
 
 </div>
 
 <div class="help">
-
-    اكتب النص ثم اضغط ✓،
-    وبعدها اسحب الجملة إلى المكان الذي تريده.
-    اضغط على الجملة لتحديدها،
-    ثم استخدم + و − لتغيير حجمها
-    أو اضغط «حذف» لحذفها.
-
+اكتب النص ثم اضغط ✓، وبعدها اسحب الجملة إلى المكان الذي تريده.<br>
+اضغط على الجملة لتحديدها، ثم استخدم + و − لتغيير حجمها أو اضغط «حذف» لحذفها.
 </div>
 
-<button
-    id="increaseSize"
-    class="sizeControl"
-    type="button"
-    aria-label="تكبير النص">
-
-    +
-
-</button>
-
-<button
-    id="decreaseSize"
-    class="sizeControl"
-    type="button"
-    aria-label="تصغير النص">
-
-    −
-
-</button>
+<button id="increaseSize" class="sizeControl" type="button" aria-label="تكبير النص">+</button>
+<button id="decreaseSize" class="sizeControl" type="button" aria-label="تصغير النص">−</button>
 
 <div class="workspace">
-
-    <div id="canvasArea">
-
-        <img
-            id="formImage"
-            alt="النموذج">
-
-    </div>
-
+<div id="canvasArea">
+<img id="formImage" alt="النموذج">
+</div>
 </div>
 
 <div id="writingBox">
-
-    <textarea
-        id="writingInput"
-        placeholder="اكتب الجملة هنا..."
-        rows="2"></textarea>
-
-    <button
-        id="confirmText"
-        type="button">
-
-        ✓
-
-    </button>
-
+<textarea id="writingInput" placeholder="اكتب الجملة هنا..." rows="2"></textarea>
+<button id="confirmText" type="button">✓</button>
 </div>
 
 <script>
 
-const imageInput =
-    document.getElementById(
-        "imageInput"
-    );
+const imageInput=document.getElementById("imageInput");
+const formImage=document.getElementById("formImage");
+const canvasArea=document.getElementById("canvasArea");
+const writingBox=document.getElementById("writingBox");
+const writingInput=document.getElementById("writingInput");
+const confirmText=document.getElementById("confirmText");
+const addTextButton=document.getElementById("addTextButton");
+const saveButton=document.getElementById("saveButton");
+const status=document.getElementById("status");
+const increaseSizeButton=document.getElementById("increaseSize");
+const decreaseSizeButton=document.getElementById("decreaseSize");
+const deleteSelectedButton=document.getElementById("deleteSelectedButton");
 
-const formImage =
-    document.getElementById(
-        "formImage"
-    );
-
-const canvasArea =
-    document.getElementById(
-        "canvasArea"
-    );
-
-const writingBox =
-    document.getElementById(
-        "writingBox"
-    );
-
-const writingInput =
-    document.getElementById(
-        "writingInput"
-    );
-
-const confirmText =
-    document.getElementById(
-        "confirmText"
-    );
-
-const addTextButton =
-    document.getElementById(
-        "addTextButton"
-    );
-
-const saveButton =
-    document.getElementById(
-        "saveButton"
-    );
-
-const status =
-    document.getElementById(
-        "status"
-    );
-
-const increaseSizeButton =
-    document.getElementById(
-        "increaseSize"
-    );
-
-const decreaseSizeButton =
-    document.getElementById(
-        "decreaseSize"
-    );
-
-const deleteSelectedButton =
-    document.getElementById(
-        "deleteSelectedButton"
-    );
-
-let imageLoaded =
-    false;
-
-let selectedText =
-    null;
-
-let textCounter =
-    0;
-
-let detectedFontSize =
-    22;
-
-let displayScale =
-    1;
+let imageLoaded=false;
+let selectedText=null;
+let textCounter=0;
+let detectedFontSize=22;
+let displayScale=1;
 
 function updateDisplayScale(){
+if(!formImage.naturalWidth||!formImage.offsetWidth){
+displayScale=1;
+return;
+}
+displayScale=formImage.offsetWidth/formImage.naturalWidth;
+}
 
-    if(
-        !formImage.naturalWidth ||
-        !formImage.offsetWidth
-    ){
+imageInput.addEventListener("change",function(event){
 
-        displayScale = 1;
+const file=event.target.files[0];
+if(!file)return;
 
-        return;
-    }
+const reader=new FileReader();
 
-    displayScale =
-        formImage.offsetWidth /
-        formImage.naturalWidth;
+reader.onload=function(e){
+
+formImage.onload=async function(){
+
+imageLoaded=true;
+canvasArea.style.display="block";
+
+const maxWidth=Math.min(
+window.innerWidth-30,
+formImage.naturalWidth
+);
+
+formImage.style.width=maxWidth+"px";
+formImage.style.height="auto";
+
+updateDisplayScale();
+clearTexts();
+
+status.textContent="⏳ جاري تحديد حجم الخط...";
+
+await detectFontSize(e.target.result);
+
+status.textContent="✅ تم تجهيز الصورة. اضغط «إضافة كتابة».";
+
+};
+
+formImage.src=e.target.result;
+
+};
+
+reader.readAsDataURL(file);
+
+});
+
+async function detectFontSize(imageSource){
+
+try{
+
+const result=await Tesseract.recognize(
+imageSource,
+"deu+eng"
+);
+
+const words=result.data.words||[];
+const heights=[];
+
+for(const word of words){
+
+if(!word.text)continue;
+
+const width=word.bbox.x1-word.bbox.x0;
+const height=word.bbox.y1-word.bbox.y0;
+
+if(height<6||height>100||width<3)continue;
+
+heights.push(height);
 
 }
 
-imageInput.addEventListener(
-    "change",
-    function(event){
+if(heights.length){
 
-        const file =
-            event.target.files[0];
+heights.sort((a,b)=>a-b);
 
-        if(!file){
-            return;
-        }
+const middle=Math.floor(heights.length/2);
 
-        const reader =
-            new FileReader();
+let median;
 
-        reader.onload =
-            function(e){
+if(heights.length%2){
+median=heights[middle];
+}else{
+median=(heights[middle-1]+heights[middle])/2;
+}
 
-                formImage.onload =
-                    async function(){
-
-                        imageLoaded =
-                            true;
-
-                        canvasArea.style.display =
-                            "block";
-
-                        const maxWidth =
-                            Math.min(
-                                window.innerWidth - 30,
-                                formImage.naturalWidth
-                            );
-
-                        formImage.style.width =
-                            maxWidth + "px";
-
-                        formImage.style.height =
-                            "auto";
-
-                        updateDisplayScale();
-
-                        clearTexts();
-
-                        status.textContent =
-                            "⏳ جاري تحديد حجم الخط...";
-
-                        await detectFontSize(
-                            e.target.result
-                        );
-
-                        status.textContent =
-                            "✅ تم تجهيز الصورة. اضغط «إضافة كتابة».";
-
-                    };
-
-                formImage.src =
-                    e.target.result;
-
-            };
-
-        reader.readAsDataURL(file);
-
-    }
+detectedFontSize=Math.max(
+10,
+Math.min(median*1.05,60)
 );
-
-async function detectFontSize(
-    imageSource
-){
-
-    try{
-
-        const result =
-            await Tesseract.recognize(
-                imageSource,
-                "deu+eng"
-            );
-
-        const words =
-            result.data.words || [];
-
-        const heights = [];
-
-        for(
-            const word of words
-        ){
-
-            if(!word.text){
-                continue;
-            }
-
-            const width =
-                word.bbox.x1 -
-                word.bbox.x0;
-
-            const height =
-                word.bbox.y1 -
-                word.bbox.y0;
-
-            if(height < 6){
-                continue;
-            }
-
-            if(height > 100){
-                continue;
-            }
-
-            if(width < 3){
-                continue;
-            }
-
-            heights.push(
-                height
-            );
-
-        }
-
-        if(heights.length){
-
-            heights.sort(
-                (a,b)=>a-b
-            );
-
-            const middle =
-                Math.floor(
-                    heights.length / 2
-                );
-
-            let median;
-
-            if(
-                heights.length % 2
-            ){
-
-                median =
-                    heights[middle];
-
-            }else{
-
-                median =
-                    (
-                        heights[middle - 1] +
-                        heights[middle]
-                    ) / 2;
-
-            }
-
-            detectedFontSize =
-                Math.max(
-                    10,
-                    Math.min(
-                        median * 1.05,
-                        60
-                    )
-                );
-
-        }
-
-    }catch(error){
-
-        console.log(
-            "OCR error:",
-            error
-        );
-
-        detectedFontSize =
-            22;
-
-    }
 
 }
 
-addTextButton.addEventListener(
-    "click",
-    function(){
+}catch(error){
 
-        if(!imageLoaded){
-
-            alert(
-                "اختر صورة النموذج أولاً."
-            );
-
-            return;
-        }
-
-        writingInput.value =
-            "";
-
-        writingBox.style.display =
-            "flex";
-
-        writingInput.focus();
-
-    }
-);
-
-confirmText.addEventListener(
-    "click",
-    function(){
-
-        const text =
-            writingInput.value.trim();
-
-        if(!text){
-
-            writingBox.style.display =
-                "none";
-
-            return;
-        }
-
-        createTextItem(
-            text
-        );
-
-        writingInput.value =
-            "";
-
-        writingBox.style.display =
-            "none";
-
-    }
-);
-
-writingInput.addEventListener(
-    "keydown",
-    function(event){
-
-        if(
-            event.key === "Enter" &&
-            !event.shiftKey
-        ){
-
-            event.preventDefault();
-
-            confirmText.click();
-
-        }
-
-    }
-);
-
-function createTextItem(
-    text
-){
-
-    textCounter++;
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-    item.className =
-        "textItem";
-
-    item.dataset.id =
-        textCounter;
-
-    item.dataset.fontSize =
-        detectedFontSize;
-
-    item.style.fontSize =
-        (
-            detectedFontSize *
-            displayScale
-        ) + "px";
-
-    const textNode =
-        document.createTextNode(
-            text
-        );
-
-    item.appendChild(
-        textNode
-    );
-
-    item.style.left =
-        "20px";
-
-    item.style.top =
-        "20px";
-
-    canvasArea.appendChild(
-        item
-    );
-
-    enableDragging(
-        item
-    );
-
-    selectText(
-        item
-    );
+console.log("OCR error:",error);
+detectedFontSize=22;
 
 }
 
-function selectText(
-    item
-){
+}
 
-    document
-        .querySelectorAll(
-            ".textItem"
-        )
-        .forEach(
-            function(el){
+addTextButton.addEventListener("click",function(){
 
-                el.classList.remove(
-                    "selected"
-                );
+if(!imageLoaded){
 
-            }
-        );
+alert("اختر صورة النموذج أولاً.");
+return;
 
-    item.classList.add(
-        "selected"
-    );
+}
 
-    selectedText =
-        item;
+writingInput.value="";
+writingBox.style.display="flex";
+writingInput.focus();
 
-    updateControls();
+});
+
+confirmText.addEventListener("click",function(){
+
+const text=writingInput.value.trim();
+
+if(!text){
+
+writingBox.style.display="none";
+return;
+
+}
+
+createTextItem(text);
+
+writingInput.value="";
+writingBox.style.display="none";
+
+});
+
+writingInput.addEventListener("keydown",function(event){
+
+if(event.key==="Enter"&&!event.shiftKey){
+
+event.preventDefault();
+confirmText.click();
+
+}
+
+});
+
+function createTextItem(text){
+
+textCounter++;
+
+const item=document.createElement("div");
+
+item.className="textItem";
+item.dataset.id=textCounter;
+item.dataset.fontSize=detectedFontSize;
+
+item.style.fontSize=
+(detectedFontSize*displayScale)+"px";
+
+item.appendChild(
+document.createTextNode(text)
+);
+
+item.style.left="20px";
+item.style.top="20px";
+
+canvasArea.appendChild(item);
+
+enableDragging(item);
+selectText(item);
+
+}
+
+function selectText(item){
+
+document
+.querySelectorAll(".textItem")
+.forEach(function(el){
+el.classList.remove("selected");
+});
+
+item.classList.add("selected");
+selectedText=item;
+
+updateControls();
 
 }
 
 function unselectText(){
 
-    document
-        .querySelectorAll(
-            ".textItem"
-        )
-        .forEach(
-            function(el){
+document
+.querySelectorAll(".textItem")
+.forEach(function(el){
+el.classList.remove("selected");
+});
 
-                el.classList.remove(
-                    "selected"
-                );
-
-            }
-        );
-
-    selectedText =
-        null;
-
-    updateControls();
+selectedText=null;
+updateControls();
 
 }
 
 function updateControls(){
 
-    const hasSelection =
-        !!selectedText;
+const hasSelection=!!selectedText;
 
-    increaseSizeButton.disabled =
-        !hasSelection;
+increaseSizeButton.disabled=!hasSelection;
+decreaseSizeButton.disabled=!hasSelection;
 
-    decreaseSizeButton.disabled =
-        !hasSelection;
-
-    if(hasSelection){
-
-        deleteSelectedButton.classList.add(
-            "show"
-        );
-
-    }else{
-
-        deleteSelectedButton.classList.remove(
-            "show"
-        );
-
-    }
+if(hasSelection){
+deleteSelectedButton.classList.add("show");
+}else{
+deleteSelectedButton.classList.remove("show");
+}
 
 }
 
-deleteSelectedButton.addEventListener(
-    "click",
-    function(event){
+deleteSelectedButton.addEventListener("click",function(event){
 
-        event.preventDefault();
+event.preventDefault();
+event.stopPropagation();
 
-        event.stopPropagation();
+if(!selectedText)return;
 
-        if(!selectedText){
-            return;
-        }
+const itemToDelete=selectedText;
 
-        const itemToDelete =
-            selectedText;
+selectedText=null;
+itemToDelete.remove();
 
-        selectedText =
-            null;
+updateControls();
 
-        itemToDelete.remove();
+});
 
-        updateControls();
+function enableDragging(item){
 
-    }
+let dragging=false;
+let startX=0;
+let startY=0;
+let originalLeft=0;
+let originalTop=0;
+
+item.addEventListener("pointerdown",function(event){
+
+event.preventDefault();
+event.stopPropagation();
+
+selectText(item);
+
+dragging=true;
+
+startX=event.clientX;
+startY=event.clientY;
+
+originalLeft=parseFloat(item.style.left)||0;
+originalTop=parseFloat(item.style.top)||0;
+
+try{
+item.setPointerCapture(event.pointerId);
+}catch(error){}
+
+});
+
+item.addEventListener("pointermove",function(event){
+
+if(!dragging)return;
+
+event.preventDefault();
+event.stopPropagation();
+
+const dx=event.clientX-startX;
+const dy=event.clientY-startY;
+
+let newLeft=originalLeft+dx;
+let newTop=originalTop+dy;
+
+const maxLeft=
+formImage.offsetWidth-item.offsetWidth;
+
+const maxTop=
+formImage.offsetHeight-item.offsetHeight;
+
+newLeft=Math.max(
+0,
+Math.min(
+newLeft,
+Math.max(0,maxLeft)
+)
 );
 
-function enableDragging(
-    item
-){
+newTop=Math.max(
+0,
+Math.min(
+newTop,
+Math.max(0,maxTop)
+)
+);
 
-    let dragging =
-        false;
+item.style.left=newLeft+"px";
+item.style.top=newTop+"px";
 
-    let startX =
-        0;
+});
 
-    let startY =
-        0;
+item.addEventListener("pointerup",function(event){
 
-    let originalLeft =
-        0;
+if(!dragging)return;
 
-    let originalTop =
-        0;
+dragging=false;
+selectText(item);
 
-    item.addEventListener(
-        "pointerdown",
-        function(event){
+try{
+item.releasePointerCapture(event.pointerId);
+}catch(error){}
 
-            event.preventDefault();
+});
 
-            event.stopPropagation();
+item.addEventListener("pointercancel",function(event){
 
-            selectText(
-                item
-            );
+dragging=false;
 
-            dragging =
-                true;
+try{
+item.releasePointerCapture(event.pointerId);
+}catch(error){}
 
-            startX =
-                event.clientX;
-
-            startY =
-                event.clientY;
-
-            originalLeft =
-                parseFloat(
-                    item.style.left
-                ) || 0;
-
-            originalTop =
-                parseFloat(
-                    item.style.top
-                ) || 0;
-
-            try{
-
-                item.setPointerCapture(
-                    event.pointerId
-                );
-
-            }catch(error){}
-
-        }
-    );
-
-    item.addEventListener(
-        "pointermove",
-        function(event){
-
-            if(!dragging){
-                return;
-            }
-
-            event.preventDefault();
-
-            event.stopPropagation();
-
-            const dx =
-                event.clientX -
-                startX;
-
-            const dy =
-                event.clientY -
-                startY;
-
-            let newLeft =
-                originalLeft +
-                dx;
-
-            let newTop =
-                originalTop +
-                dy;
-
-            const maxLeft =
-                formImage.offsetWidth -
-                item.offsetWidth;
-
-            const maxTop =
-                formImage.offsetHeight -
-                item.offsetHeight;
-
-            newLeft =
-                Math.max(
-                    0,
-                    Math.min(
-                        newLeft,
-                        Math.max(
-                            0,
-                            maxLeft
-                        )
-                    )
-                );
-
-            newTop =
-                Math.max(
-                    0,
-                    Math.min(
-                        newTop,
-                        Math.max(
-                            0,
-                            maxTop
-                        )
-                    )
-                );
-
-            item.style.left =
-                newLeft + "px";
-
-            item.style.top =
-                newTop + "px";
-
-        }
-    );
-
-    item.addEventListener(
-        "pointerup",
-        function(event){
-
-            if(!dragging){
-                return;
-            }
-
-            dragging =
-                false;
-
-            selectText(
-                item
-            );
-
-            try{
-
-                item.releasePointerCapture(
-                    event.pointerId
-                );
-
-            }catch(error){}
-
-        }
-    );
-
-    item.addEventListener(
-        "pointercancel",
-        function(event){
-
-            dragging =
-                false;
-
-            try{
-
-                item.releasePointerCapture(
-                    event.pointerId
-                );
-
-            }catch(error){}
-
-        }
-    );
+});
 
 }
 
-
-/* =================================================
+/* =========================================
    السحب من أي مكان على الشاشة
-================================================= */
+========================================= */
 
-let screenDragging =
-    false;
+let screenDragging=false;
+let screenDragStartX=0;
+let screenDragStartY=0;
+let screenOriginalLeft=0;
+let screenOriginalTop=0;
 
-let screenDragStartX =
-    0;
+document.addEventListener("pointerdown",function(event){
 
-let screenDragStartY =
-    0;
+if(!selectedText)return;
 
-let screenOriginalLeft =
-    0;
-
-let screenOriginalTop =
-    0;
-
-
-document.addEventListener(
-    "pointerdown",
-    function(event){
-
-        if(!selectedText){
-            return;
-        }
-
-        /*
-         * لا نبدأ السحب من أزرار التحكم
-         * أو مربع الكتابة.
-         */
-
-        if(
-            event.target.closest("button") ||
-            event.target.closest("label") ||
-            event.target.closest("input") ||
-            event.target.closest("textarea") ||
-            event.target.closest("#writingBox")
-        ){
-            return;
-        }
-
-        /*
-         * إذا ضغط على الجملة نفسها،
-         * السحب الخاص بها يتولى الأمر.
-         */
-
-        if(
-            event.target.classList &&
-            event.target.classList.contains("textItem")
-        ){
-            return;
-        }
-
-        screenDragging =
-            true;
-
-        screenDragStartX =
-            event.clientX;
-
-        screenDragStartY =
-            event.clientY;
-
-        screenOriginalLeft =
-            parseFloat(
-                selectedText.style.left
-            ) || 0;
-
-        screenOriginalTop =
-            parseFloat(
-                selectedText.style.top
-            ) || 0;
-
-        event.preventDefault();
-
-        try{
-
-            document.documentElement.setPointerCapture(
-                event.pointerId
-            );
-
-        }catch(error){}
-
-    }
-);
-
-
-document.addEventListener(
-    "pointermove",
-    function(event){
-
-        if(
-            !screenDragging ||
-            !selectedText
-        ){
-            return;
-        }
-
-        event.preventDefault();
-
-        const dx =
-            event.clientX -
-            screenDragStartX;
-
-        const dy =
-            event.clientY -
-            screenDragStartY;
-
-        let newLeft =
-            screenOriginalLeft +
-            dx;
-
-        let newTop =
-            screenOriginalTop +
-            dy;
-
-        const maxLeft =
-            formImage.offsetWidth -
-            selectedText.offsetWidth;
-
-        const maxTop =
-            formImage.offsetHeight -
-            selectedText.offsetHeight;
-
-        newLeft =
-            Math.max(
-                0,
-                Math.min(
-                    newLeft,
-                    Math.max(
-                        0,
-                        maxLeft
-                    )
-                )
-            );
-
-        newTop =
-            Math.max(
-                0,
-                Math.min(
-                    newTop,
-                    Math.max(
-                        0,
-                        maxTop
-                    )
-                )
-            );
-
-        selectedText.style.left =
-            newLeft + "px";
-
-        selectedText.style.top =
-            newTop + "px";
-
-    }
-);
-
-
-document.addEventListener(
-    "pointerup",
-    function(event){
-
-        if(!screenDragging){
-            return;
-        }
-
-        screenDragging =
-            false;
-
-        try{
-
-            document.documentElement.releasePointerCapture(
-                event.pointerId
-            );
-
-        }catch(error){}
-
-    }
-);
-
-
-document.addEventListener(
-    "pointercancel",
-    function(){
-
-        screenDragging =
-            false;
-
-    }
-);
-
-
-/* =================================================
-   تغيير حجم الجملة
-================================================= */
-
-function changeSelectedFontSize(
-    multiplier
+if(
+event.target.closest("button")||
+event.target.closest("label")||
+event.target.closest("input")||
+event.target.closest("textarea")||
+event.target.closest("#writingBox")
 ){
+return;
+}
 
-    if(!selectedText){
-        return;
-    }
+if(
+event.target.classList&&
+event.target.classList.contains("textItem")
+){
+return;
+}
 
-    const currentSize =
-        parseFloat(
-            selectedText.dataset.fontSize
-        ) || detectedFontSize;
+screenDragging=true;
 
-    let newSize =
-        currentSize *
-        multiplier;
+screenDragStartX=event.clientX;
+screenDragStartY=event.clientY;
 
-    newSize =
-        Math.max(
-            6,
-            Math.min(
-                newSize,
-                200
-            )
-        );
+screenOriginalLeft=
+parseFloat(selectedText.style.left)||0;
 
-    selectedText.dataset.fontSize =
-        newSize;
+screenOriginalTop=
+parseFloat(selectedText.style.top)||0;
 
-    selectedText.style.fontSize =
-        (
-            newSize *
-            displayScale
-        ) + "px";
+event.preventDefault();
+
+try{
+document.documentElement.setPointerCapture(
+event.pointerId
+);
+}catch(error){}
+
+});
+
+document.addEventListener("pointermove",function(event){
+
+if(!screenDragging||!selectedText)return;
+
+event.preventDefault();
+
+const dx=event.clientX-screenDragStartX;
+const dy=event.clientY-screenDragStartY;
+
+let newLeft=screenOriginalLeft+dx;
+let newTop=screenOriginalTop+dy;
+
+const maxLeft=
+formImage.offsetWidth-selectedText.offsetWidth;
+
+const maxTop=
+formImage.offsetHeight-selectedText.offsetHeight;
+
+newLeft=Math.max(
+0,
+Math.min(
+newLeft,
+Math.max(0,maxLeft)
+)
+);
+
+newTop=Math.max(
+0,
+Math.min(
+newTop,
+Math.max(0,maxTop)
+)
+);
+
+selectedText.style.left=newLeft+"px";
+selectedText.style.top=newTop+"px";
+
+});
+
+document.addEventListener("pointerup",function(event){
+
+if(!screenDragging)return;
+
+screenDragging=false;
+
+try{
+document.documentElement.releasePointerCapture(
+event.pointerId
+);
+}catch(error){}
+
+});
+
+document.addEventListener("pointercancel",function(){
+
+screenDragging=false;
+
+});
+
+/* =========================================
+   تغيير حجم الجملة
+========================================= */
+
+function changeSelectedFontSize(multiplier){
+
+if(!selectedText)return;
+
+const currentSize=
+parseFloat(selectedText.dataset.fontSize)||
+detectedFontSize;
+
+let newSize=currentSize*multiplier;
+
+newSize=Math.max(
+6,
+Math.min(newSize,200)
+);
+
+selectedText.dataset.fontSize=newSize;
+
+selectedText.style.fontSize=
+(newSize*displayScale)+"px";
 
 }
 
-increaseSizeButton.addEventListener(
-    "click",
-    function(event){
+increaseSizeButton.addEventListener("click",function(event){
 
-        event.preventDefault();
+event.preventDefault();
+event.stopPropagation();
 
-        event.stopPropagation();
+changeSelectedFontSize(1.10);
 
-        changeSelectedFontSize(
-            1.10
-        );
+});
 
-    }
-);
+decreaseSizeButton.addEventListener("click",function(event){
 
-decreaseSizeButton.addEventListener(
-    "click",
-    function(event){
+event.preventDefault();
+event.stopPropagation();
 
-        event.preventDefault();
+changeSelectedFontSize(0.90);
 
-        event.stopPropagation();
-
-        changeSelectedFontSize(
-            0.90
-        );
-
-    }
-);
+});
 
 function clearTexts(){
 
-    document
-        .querySelectorAll(
-            ".textItem"
-        )
-        .forEach(
-            function(item){
+document
+.querySelectorAll(".textItem")
+.forEach(function(item){
+item.remove();
+});
 
-                item.remove();
-
-            }
-        );
-
-    selectedText =
-        null;
-
-    updateControls();
+selectedText=null;
+updateControls();
 
 }
 
+/* =========================================
+   حفظ الصورة
+========================================= */
 
-/*
- * عند الضغط على الصورة أو مساحة العمل
- * لا نلغي تحديد الجملة؛ لأن الضغط من هناك
- * أصبح يستخدم لتحريك الجملة المحددة.
- */
+saveButton.addEventListener("click",async function(){
 
+if(!imageLoaded){
 
-saveButton.addEventListener(
-    "click",
-    async function(){
+alert("اختر صورة النموذج أولاً.");
+return;
 
-        if(!imageLoaded){
+}
 
-            alert(
-                "اختر صورة النموذج أولاً."
-            );
+if(typeof html2canvas!=="function"){
 
-            return;
-        }
-
-        if(
-            typeof html2canvas !==
-            "function"
-        ){
-
-            alert(
-                "تعذر تحميل أداة حفظ الصورة. تأكد من اتصال الإنترنت."
-            );
-
-            return;
-        }
-
-        const oldSelectedText =
-            selectedText;
-
-        unselectText();
-
-        status.textContent =
-            "⏳ جاري حفظ الصورة...";
-
-        try{
-
-            updateDisplayScale();
-
-            const captureScale =
-                formImage.naturalWidth /
-                formImage.offsetWidth;
-
-            const capturedCanvas =
-                await html2canvas(
-                    canvasArea,
-                    {
-                        backgroundColor:null,
-                        scale:
-                            captureScale,
-                        useCORS:true,
-                        allowTaint:false,
-                        logging:false,
-                        imageTimeout:0
-                    }
-                );
-
-            const outputCanvas =
-                document.createElement(
-                    "canvas"
-                );
-
-            outputCanvas.width =
-                formImage.naturalWidth;
-
-            outputCanvas.height =
-                formImage.naturalHeight;
-
-            const outputCtx =
-                outputCanvas.getContext(
-                    "2d"
-                );
-
-            outputCtx.drawImage(
-                capturedCanvas,
-                0,
-                0,
-                outputCanvas.width,
-                outputCanvas.height
-            );
-
-            const link =
-                document.createElement(
-                    "a"
-                );
-
-            link.download =
-                "filled-form.png";
-
-            link.href =
-                outputCanvas.toDataURL(
-                    "image/png"
-                );
-
-            link.click();
-
-            status.textContent =
-                "✅ تم حفظ الصورة بنجاح.";
-
-        }catch(error){
-
-            console.error(
-                "Save error:",
-                error
-            );
-
-            status.textContent =
-                "❌ حدث خطأ أثناء حفظ الصورة.";
-
-            alert(
-                "حدث خطأ أثناء حفظ الصورة. حاول مرة أخرى."
-            );
-
-        }
-
-        if(
-            oldSelectedText &&
-            document.body.contains(
-                oldSelectedText
-            )
-        ){
-
-            selectText(
-                oldSelectedText
-            );
-
-        }
-
-    }
+alert(
+"تعذر تحميل أداة حفظ الصورة. تأكد من اتصال الإنترنت."
 );
 
+return;
 
-document.addEventListener(
-    "pointerdown",
-    function(event){
+}
 
-        if(
-            writingBox.style.display === "flex" &&
-            !writingBox.contains(
-                event.target
-            ) &&
-            event.target !==
-                addTextButton
-        ){
+const oldSelectedText=selectedText;
 
-            writingBox.style.display =
-                "none";
+unselectText();
 
-        }
+status.textContent="⏳ جاري حفظ الصورة...";
 
-    }
+try{
+
+updateDisplayScale();
+
+const captureScale=
+formImage.naturalWidth/
+formImage.offsetWidth;
+
+const capturedCanvas=
+await html2canvas(
+canvasArea,
+{
+backgroundColor:null,
+scale:captureScale,
+useCORS:true,
+allowTaint:false,
+logging:false,
+imageTimeout:0
+}
 );
 
+const outputCanvas=document.createElement("canvas");
 
-window.addEventListener(
-    "resize",
-    function(){
+outputCanvas.width=formImage.naturalWidth;
+outputCanvas.height=formImage.naturalHeight;
 
-        if(!imageLoaded){
-            return;
-        }
+const outputCtx=
+outputCanvas.getContext("2d");
 
-        updateDisplayScale();
-
-        document
-            .querySelectorAll(
-                ".textItem"
-            )
-            .forEach(
-                function(item){
-
-                    const size =
-                        parseFloat(
-                            item.dataset.fontSize
-                        ) ||
-                        detectedFontSize;
-
-                    item.style.fontSize =
-                        (
-                            size *
-                            displayScale
-                        ) + "px";
-
-                }
-            );
-
-    }
+outputCtx.drawImage(
+capturedCanvas,
+0,
+0,
+outputCanvas.width,
+outputCanvas.height
 );
+
+const link=document.createElement("a");
+
+link.download="filled-form.png";
+
+link.href=
+outputCanvas.toDataURL("image/png");
+
+link.click();
+
+status.textContent="✅ تم حفظ الصورة بنجاح.";
+
+}catch(error){
+
+console.error("Save error:",error);
+
+status.textContent="❌ حدث خطأ أثناء حفظ الصورة.";
+
+alert(
+"حدث خطأ أثناء حفظ الصورة. حاول مرة أخرى."
+);
+
+}
+
+if(
+oldSelectedText&&
+document.body.contains(oldSelectedText)
+){
+selectText(oldSelectedText);
+}
+
+});
+
+/* إغلاق مربع الكتابة عند الضغط خارجه */
+
+document.addEventListener("pointerdown",function(event){
+
+if(
+writingBox.style.display==="flex"&&
+!writingBox.contains(event.target)&&
+event.target!==addTextButton
+){
+
+writingBox.style.display="none";
+
+}
+
+});
+
+/* تغيير حجم النص عند تغيير حجم الشاشة */
+
+window.addEventListener("resize",function(){
+
+if(!imageLoaded)return;
+
+updateDisplayScale();
+
+document
+.querySelectorAll(".textItem")
+.forEach(function(item){
+
+const size=
+parseFloat(item.dataset.fontSize)||
+detectedFontSize;
+
+item.style.fontSize=
+(size*displayScale)+"px";
+
+});
+
+});
 
 updateControls();
+
+/* =========================================
+   تشغيل Service Worker
+========================================= */
+
+if("serviceWorker" in navigator){
+
+window.addEventListener("load",function(){
+
+navigator.serviceWorker
+.register("./sw.js")
+.then(function(){
+console.log("Service Worker registered");
+})
+.catch(function(error){
+console.error(
+"Service Worker error:",
+error
+);
+});
+
+});
+
+}
 
 </script>
 
 </body>
-
 </html>
