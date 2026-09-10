@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>تعبئة النماذج الذكية</title>
-
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+<title>تعبئة الصور</title>
 
 <style>
 * {
@@ -16,1003 +13,971 @@
 
 body {
     margin: 0;
-    background: #f2f2f2;
     font-family: Arial, sans-serif;
+    background: #eeeeee;
     direction: rtl;
 }
 
-header {
+.topbar {
     background: #111;
     color: white;
-    padding: 15px;
+    padding: 12px;
     text-align: center;
 }
 
-.controls {
-    padding: 12px;
+.topbar h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.toolbar {
     background: white;
-    text-align: center;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
     box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 
 button,
-label {
-    border: 0;
+.uploadButton {
+    border: none;
     border-radius: 8px;
-    padding: 10px 14px;
-    margin: 4px;
+    padding: 10px 15px;
     font-size: 15px;
     cursor: pointer;
 }
 
-.upload {
+.uploadButton {
     background: #1976d2;
     color: white;
 }
 
-.save {
+.addButton {
+    background: #673ab7;
+    color: white;
+}
+
+.saveButton {
     background: #16803c;
     color: white;
 }
 
-.scan {
-    background: #7b1fa2;
-    color: white;
+input[type="file"] {
+    display: none;
 }
 
 #status {
-    margin-top: 8px;
-    font-size: 14px;
+    width: 100%;
+    text-align: center;
     color: #555;
+    font-size: 14px;
 }
 
 .workspace {
-    width: 100%;
+    padding: 15px;
     overflow: auto;
-    padding: 12px;
 }
 
-#formContainer {
+#canvasArea {
     position: relative;
     margin: auto;
     width: fit-content;
+    display: none;
 }
 
 #formImage {
     display: block;
     max-width: none;
     user-select: none;
+    -webkit-user-drag: none;
 }
 
-.detectedField {
-    position: absolute;
-    border: 2px solid rgba(0, 140, 255, .75);
-    background: rgba(255,255,255,.12);
-    border-radius: 3px;
-    cursor: text;
-    z-index: 5;
-}
 
-.detectedField input {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    outline: none;
-    background: rgba(255,255,255,.82);
-    font-size: 18px;
-    padding: 3px 5px;
+/* ==========================
+   مستطيل الكتابة
+========================== */
+
+#writingBox {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    
+    width: min(90vw, 500px);
+    
+    background: white;
+    border: 2px solid #1976d2;
+    border-radius: 12px;
+    
+    padding: 8px;
+    
+    display: none;
+    
+    z-index: 5000;
+    
+    box-shadow: 0 5px 25px rgba(0,0,0,.3);
+    
     direction: ltr;
-    color: #000;
 }
 
-.detectedField input:focus {
-    background: rgba(255,255,255,.95);
+#writingInput {
+    width: calc(100% - 55px);
+    min-height: 48px;
+    
+    border: none;
+    outline: none;
+    
+    font-size: 18px;
+    padding: 8px;
+    
+    resize: none;
+    
+    direction: auto;
 }
 
-.fieldLabel {
-    position: absolute;
-    top: -22px;
-    right: 0;
-    font-size: 11px;
-    background: #1976d2;
+#confirmText {
+    width: 45px;
+    height: 45px;
+    
+    background: #16803c;
     color: white;
-    padding: 2px 5px;
+    
+    border-radius: 50%;
+    
+    font-size: 23px;
+    font-weight: bold;
+    
+    padding: 0;
+}
+
+
+/* ==========================
+   النص الموجود على الصورة
+========================== */
+
+.textItem {
+    position: absolute;
+    
+    min-width: 30px;
+    min-height: 30px;
+    
+    padding: 3px 6px;
+    
+    cursor: move;
+    
+    user-select: none;
+    touch-action: none;
+    
+    font-size: 22px;
+    color: #000;
+    
+    background: transparent;
+    
+    z-index: 20;
+    
+    white-space: pre-wrap;
+    
+    direction: auto;
+}
+
+.textItem.selected {
+    outline: 2px dashed #1976d2;
     border-radius: 3px;
-    white-space: nowrap;
 }
 
-.hidden {
+.deleteText {
+    position: absolute;
+    top: -28px;
+    right: -5px;
+    
+    background: #d32f2f;
+    color: white;
+    
+    border: none;
+    border-radius: 50%;
+    
+    width: 25px;
+    height: 25px;
+    
+    font-size: 14px;
+    
     display: none;
 }
 
-input[type="file"] {
-    display: none;
+.textItem.selected .deleteText {
+    display: block;
+}
+
+
+/* ==========================
+   تعليمات
+========================== */
+
+.help {
+    background: white;
+    margin: 10px auto;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 700px;
+    text-align: center;
+    color: #555;
+    font-size: 14px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-    <h2>تعبئة النماذج الذكية</h2>
-    <div>ارفع النموذج وسيتم تحليل أماكن التعبئة تلقائياً</div>
-</header>
+<div class="topbar">
+    <h2>تعبئة النموذج</h2>
+</div>
 
-<div class="controls">
 
-    <label class="upload">
-        📷 اختيار صورة النموذج
-        <input type="file" id="imageInput" accept="image/*">
+<div class="toolbar">
+
+    <label class="uploadButton">
+        📷 اختيار صورة
+        <input
+            type="file"
+            id="imageInput"
+            accept="image/*"
+        >
     </label>
 
-    <button class="scan" id="scanButton">
-        🔍 تحليل النموذج
+    <button
+        class="addButton"
+        id="addTextButton"
+        type="button"
+    >
+        ✏️ إضافة كتابة
     </button>
 
-    <button class="save" id="saveButton">
-        💾 حفظ النموذج
+    <button
+        class="saveButton"
+        id="saveButton"
+        type="button"
+    >
+        💾 حفظ الصورة
     </button>
 
     <div id="status">
-        لم يتم اختيار صورة بعد
+        اختر صورة للبدء
     </div>
 
 </div>
 
+
+<div class="help">
+    بعد كتابة النص اضغط ✓، ثم اسحب الجملة وضعها في المكان الذي تريده على الصورة.
+</div>
+
+
 <div class="workspace">
 
-    <div id="formContainer">
+    <div id="canvasArea">
 
-        <img id="formImage" class="hidden">
+        <img
+            id="formImage"
+            alt="النموذج"
+        >
 
     </div>
+
+</div>
+
+
+<!-- ==========================
+     مربع الكتابة
+========================== -->
+
+<div id="writingBox">
+
+    <textarea
+        id="writingInput"
+        placeholder="اكتب الجملة هنا..."
+        rows="2"
+    ></textarea>
+
+    <button
+        id="confirmText"
+        type="button"
+        aria-label="تأكيد"
+    >
+        ✓
+    </button>
 
 </div>
 
 
 <script>
 
-const imageInput = document.getElementById("imageInput");
-const formImage = document.getElementById("formImage");
-const formContainer = document.getElementById("formContainer");
-const statusBox = document.getElementById("status");
-const scanButton = document.getElementById("scanButton");
-const saveButton = document.getElementById("saveButton");
+const imageInput =
+    document.getElementById("imageInput");
 
-let originalImage = null;
-let detectedFields = [];
+const formImage =
+    document.getElementById("formImage");
 
+const canvasArea =
+    document.getElementById("canvasArea");
 
-/* =========================
-   اختيار الصورة
-========================= */
+const writingBox =
+    document.getElementById("writingBox");
 
-imageInput.addEventListener("change", function(e) {
+const writingInput =
+    document.getElementById("writingInput");
 
-    const file = e.target.files[0];
+const confirmText =
+    document.getElementById("confirmText");
 
-    if (!file) return;
+const addTextButton =
+    document.getElementById("addTextButton");
 
-    const reader = new FileReader();
+const saveButton =
+    document.getElementById("saveButton");
 
-    reader.onload = function(event) {
-
-        originalImage = new Image();
-
-        originalImage.onload = function() {
-
-            formImage.src = event.target.result;
-            formImage.classList.remove("hidden");
-
-            formImage.style.width = originalImage.naturalWidth + "px";
-            formImage.style.height = originalImage.naturalHeight + "px";
-
-            clearFields();
-
-            statusBox.textContent =
-                "تم تحميل الصورة. اضغط «تحليل النموذج».";
-
-        };
-
-        originalImage.src = event.target.result;
-
-    };
-
-    reader.readAsDataURL(file);
-
-});
+const status =
+    document.getElementById("status");
 
 
-/* =========================
-   حذف الحقول السابقة
-========================= */
+let imageLoaded = false;
 
-function clearFields() {
+let selectedText = null;
 
-    detectedFields = [];
-
-    const fields =
-        formContainer.querySelectorAll(".detectedField");
-
-    fields.forEach(field => field.remove());
-
-}
+let textCounter = 0;
 
 
-/* =========================
-   تحليل OCR
-========================= */
+/* ==========================
+   تحميل الصورة
+========================== */
 
-scanButton.addEventListener("click", async function() {
+imageInput.addEventListener(
+    "change",
+    function(event) {
 
-    if (!originalImage) {
+        const file =
+            event.target.files[0];
 
-        alert("اختار صورة النموذج أولاً.");
+        if (!file) return;
 
-        return;
-    }
+        const reader =
+            new FileReader();
 
-    clearFields();
+        reader.onload =
+            function(e) {
 
-    statusBox.textContent =
-        "⏳ جاري قراءة النص الموجود في النموذج...";
+                formImage.onload =
+                    function() {
 
-    try {
+                        imageLoaded = true;
 
-        const result =
-            await Tesseract.recognize(
-                originalImage,
-                "deu+eng",
-                {
-                    logger: function(info) {
+                        canvasArea.style.display =
+                            "block";
 
-                        if (info.status === "recognizing text") {
+                        /*
+                         * عرض الصورة بحجم مناسب
+                         * للشاشة مع الحفاظ على
+                         * أبعادها.
+                         */
 
-                            const percent =
-                                Math.round(info.progress * 100);
+                        const maxWidth =
+                            Math.min(
+                                window.innerWidth - 30,
+                                formImage.naturalWidth
+                            );
 
-                            statusBox.textContent =
-                                "🔍 قراءة النموذج: " +
-                                percent +
-                                "%";
+                        formImage.style.width =
+                            maxWidth + "px";
 
-                        }
+                        formImage.style.height =
+                            "auto";
 
-                    }
-                }
-            );
+                        clearTexts();
 
-        const words = result.data.words || [];
+                        status.textContent =
+                            "الصورة جاهزة. اضغط «إضافة كتابة».";
 
-        statusBox.textContent =
-            "🧠 تم قراءة النموذج. جاري اكتشاف أماكن التعبئة...";
+                    };
 
-        detectedFields =
-            detectFields(words);
+                formImage.src =
+                    e.target.result;
 
-        drawDetectedFields(detectedFields);
+            };
 
-        statusBox.textContent =
-            "✅ تم اكتشاف " +
-            detectedFields.length +
-            " حقل قابل للتعبئة.";
-
-    } catch (error) {
-
-        console.error(error);
-
-        statusBox.textContent =
-            "❌ حدث خطأ أثناء تحليل الصورة.";
-
-        alert(
-            "تعذر تحليل النموذج. تأكد من اتصال الإنترنت ثم حاول مرة أخرى."
-        );
+        reader.readAsDataURL(file);
 
     }
-
-});
-
-
-/* =========================
-   كلمات الحقول المعروفة
-========================= */
-
-const fieldPatterns = [
-
-    {
-        name: "الاسم الأخير",
-        patterns: [
-            "familiennamen",
-            "nachnamen",
-            "familienname",
-            "nachname",
-            "surname",
-            "last name"
-        ]
-    },
-
-    {
-        name: "الاسم الأول",
-        patterns: [
-            "vornamen",
-            "vorname",
-            "first name",
-            "given name"
-        ]
-    },
-
-    {
-        name: "تاريخ الميلاد",
-        patterns: [
-            "geburtsdatum",
-            "geburt",
-            "date of birth",
-            "birth"
-        ]
-    },
-
-    {
-        name: "الشارع",
-        patterns: [
-            "straße",
-            "strasse",
-            "gasse",
-            "platz",
-            "street",
-            "address"
-        ]
-    },
-
-    {
-        name: "رقم المنزل",
-        patterns: [
-            "hausnummer",
-            "house number"
-        ]
-    },
-
-    {
-        name: "الدرج",
-        patterns: [
-            "stiege"
-        ]
-    },
-
-    {
-        name: "الباب",
-        patterns: [
-            "tür",
-            "tur"
-        ]
-    },
-
-    {
-        name: "الرمز البريدي",
-        patterns: [
-            "plz",
-            "postleitzahl",
-            "postal code",
-            "zip"
-        ]
-    },
-
-    {
-        name: "المدينة",
-        patterns: [
-            "ort",
-            "gemeinde",
-            "city"
-        ]
-    },
-
-    {
-        name: "مفتاح الهاتف",
-        patterns: [
-            "vorwahl"
-        ]
-    },
-
-    {
-        name: "رقم الهاتف",
-        patterns: [
-            "telefonnummer",
-            "telefon",
-            "phone"
-        ]
-    },
-
-    {
-        name: "البريد الإلكتروني",
-        patterns: [
-            "e-mail",
-            "email",
-            "mail"
-        ]
-    },
-
-    {
-        name: "رقم المساهمة",
-        patterns: [
-            "beitragsnummer"
-        ]
-    }
-
-];
+);
 
 
-/* =========================
-   تنظيف النص
-========================= */
+/* ==========================
+   فتح مربع الكتابة
+========================== */
 
-function normalizeText(text) {
+addTextButton.addEventListener(
+    "click",
+    function() {
 
-    return text
-        .toLowerCase()
-        .replace(/[^\p{L}\p{N}@.-]/gu, "")
-        .trim();
+        if (!imageLoaded) {
 
-}
+            alert("اختر صورة أولاً.");
 
-
-/* =========================
-   إيجاد اسم الحقل
-========================= */
-
-function findFieldName(text) {
-
-    const normalized =
-        normalizeText(text);
-
-    for (const field of fieldPatterns) {
-
-        for (const pattern of field.patterns) {
-
-            const p =
-                normalizeText(pattern);
-
-            if (
-                normalized.includes(p) ||
-                p.includes(normalized)
-            ) {
-
-                return field.name;
-
-            }
-
+            return;
         }
 
-    }
+        openWritingBox();
 
-    return null;
+    }
+);
+
+
+/* ==========================
+   فتح نافذة الكتابة
+========================== */
+
+function openWritingBox() {
+
+    writingInput.value = "";
+
+    writingBox.style.display =
+        "flex";
+
+    writingInput.focus();
 
 }
 
 
-/* =========================
-   اكتشاف الحقول
-========================= */
+/* ==========================
+   تأكيد النص
+========================== */
 
-function detectFields(words) {
+confirmText.addEventListener(
+    "click",
+    function() {
 
-    const fields = [];
+        const text =
+            writingInput.value.trim();
 
-    for (let i = 0; i < words.length; i++) {
+        if (!text) {
 
-        const word = words[i];
+            writingInput.focus();
 
-        if (!word.text) continue;
+            return;
+        }
 
-        const fieldName =
-            findFieldName(word.text);
+        createTextItem(text);
 
-        if (!fieldName) continue;
+        writingBox.style.display =
+            "none";
+
+    }
+);
 
 
-        /*
-         * نبحث عن مساحة فارغة إلى يمين
-         * عنوان الحقل.
-         */
+/* ==========================
+   Enter + Ctrl/Command
+========================== */
 
-        let candidate = null;
+writingInput.addEventListener(
+    "keydown",
+    function(event) {
 
-        for (
-            let j = 0;
-            j < words.length;
-            j++
+        if (
+            event.key === "Enter" &&
+            (event.ctrlKey || event.metaKey)
         ) {
 
-            if (i === j) continue;
+            event.preventDefault();
 
-            const other = words[j];
-
-            const sameLine =
-                Math.abs(
-                    other.bbox.y0 -
-                    word.bbox.y0
-                ) < 45;
-
-            if (!sameLine) continue;
-
-            /*
-             * في النموذج الألماني
-             * غالباً مكان التعبئة يكون
-             * بعد عنوان الحقل.
-             */
-
-            const distance =
-                other.bbox.x0 -
-                word.bbox.x1;
-
-            if (
-                distance > 10 &&
-                distance < 500
-            ) {
-
-                candidate = other;
-
-                break;
-
-            }
+            confirmText.click();
 
         }
 
+    }
+);
 
-        /*
-         * إذا لم نجد كلمة بعدها،
-         * نحاول إنشاء مساحة فارغة
-         * بجانب عنوان الحقل.
-         */
 
-        let x;
-        let y;
-        let width;
-        let height;
+/* ==========================
+   إنشاء الجملة على الصورة
+========================== */
 
-        if (candidate) {
+function createTextItem(text) {
 
-            x = word.bbox.x1 + 8;
-            y = word.bbox.y0;
+    const item =
+        document.createElement("div");
 
-            width =
-                Math.max(
-                    100,
-                    candidate.bbox.x0 -
-                    word.bbox.x1 -
-                    15
-                );
+    item.className =
+        "textItem";
 
-            height =
-                Math.max(
-                    28,
-                    word.bbox.y1 -
-                    word.bbox.y0 +
-                    10
-                );
+    item.textContent =
+        text;
 
-        } else {
+    item.dataset.id =
+        ++textCounter;
 
-            x = word.bbox.x1 + 8;
-            y = word.bbox.y0;
 
-            width = 220;
-            height = 34;
+    /*
+     * زر حذف صغير يظهر فقط
+     * عندما يتم تحديد النص.
+     */
+
+    const deleteButton =
+        document.createElement("button");
+
+    deleteButton.className =
+        "deleteText";
+
+    deleteButton.textContent =
+        "×";
+
+    deleteButton.type =
+        "button";
+
+    deleteButton.addEventListener(
+        "pointerdown",
+        function(event) {
+
+            event.stopPropagation();
 
         }
+    );
+
+    deleteButton.addEventListener(
+        "click",
+        function(event) {
+
+            event.stopPropagation();
+
+            item.remove();
+
+            selectedText = null;
+
+        }
+    );
 
 
-        /*
-         * منع إنشاء حقول صغيرة جداً.
-         */
+    item.appendChild(deleteButton);
 
-        if (width < 70) continue;
-
-        /*
-         * منع التكرار.
-         */
-
-        const duplicate =
-            fields.some(f =>
-                Math.abs(f.x - x) < 20 &&
-                Math.abs(f.y - y) < 20
-            );
-
-        if (duplicate) continue;
+    canvasArea.appendChild(item);
 
 
-        fields.push({
+    /*
+     * نضع النص في بداية الصورة
+     * ويمكن للمستخدم سحبه مباشرة.
+     */
 
-            name: fieldName,
+    item.style.left =
+        "20px";
 
-            x: x,
-            y: y,
+    item.style.top =
+        "20px";
 
-            width: width,
-            height: height
+
+    enableDragging(item);
+
+    selectText(item);
+
+}
+
+
+/* ==========================
+   تحديد النص
+========================== */
+
+function selectText(item) {
+
+    document
+        .querySelectorAll(".textItem")
+        .forEach(el => {
+
+            el.classList.remove("selected");
 
         });
 
-    }
+    item.classList.add("selected");
 
-
-    /*
-     * محاولة إضافية لاكتشاف
-     * الخطوط الفارغة الطويلة.
-     */
-
-    const lineFields =
-        detectBlankLines();
-
-    for (const line of lineFields) {
-
-        const duplicate =
-            fields.some(f =>
-                Math.abs(f.x - line.x) < 25 &&
-                Math.abs(f.y - line.y) < 25
-            );
-
-        if (!duplicate) {
-
-            fields.push(line);
-
-        }
-
-    }
-
-
-    return fields;
+    selectedText =
+        item;
 
 }
 
 
-/* =========================
-   اكتشاف الخطوط الفارغة
-========================= */
+/* ==========================
+   السحب باللمس أو الماوس
+========================== */
 
-function detectBlankLines() {
+function enableDragging(item) {
 
-    const result = [];
+    let dragging = false;
 
-    /*
-     * هذه المرحلة اختيارية.
-     * نستخدم Canvas لتحليل الخطوط.
-     */
+    let startX = 0;
+    let startY = 0;
 
-    try {
+    let originalLeft = 0;
+    let originalTop = 0;
+
+
+    item.addEventListener(
+        "pointerdown",
+        function(event) {
+
+            /*
+             * إذا ضغط المستخدم على
+             * زر الحذف لا نبدأ السحب.
+             */
+
+            if (
+                event.target.classList.contains(
+                    "deleteText"
+                )
+            ) {
+                return;
+            }
+
+
+            event.preventDefault();
+
+            selectText(item);
+
+            dragging = true;
+
+            startX =
+                event.clientX;
+
+            startY =
+                event.clientY;
+
+
+            originalLeft =
+                parseFloat(
+                    item.style.left
+                ) || 0;
+
+            originalTop =
+                parseFloat(
+                    item.style.top
+                ) || 0;
+
+
+            item.setPointerCapture(
+                event.pointerId
+            );
+
+        }
+    );
+
+
+    item.addEventListener(
+        "pointermove",
+        function(event) {
+
+            if (!dragging) return;
+
+            const dx =
+                event.clientX -
+                startX;
+
+            const dy =
+                event.clientY -
+                startY;
+
+
+            let newLeft =
+                originalLeft + dx;
+
+            let newTop =
+                originalTop + dy;
+
+
+            /*
+             * إبقاء النص داخل الصورة.
+             */
+
+            const maxLeft =
+                formImage.offsetWidth -
+                item.offsetWidth;
+
+            const maxTop =
+                formImage.offsetHeight -
+                item.offsetHeight;
+
+
+            newLeft =
+                Math.max(
+                    0,
+                    Math.min(
+                        newLeft,
+                        Math.max(0, maxLeft)
+                    )
+                );
+
+            newTop =
+                Math.max(
+                    0,
+                    Math.min(
+                        newTop,
+                        Math.max(0, maxTop)
+                    )
+                );
+
+
+            item.style.left =
+                newLeft + "px";
+
+            item.style.top =
+                newTop + "px";
+
+        }
+    );
+
+
+    item.addEventListener(
+        "pointerup",
+        function(event) {
+
+            dragging = false;
+
+            try {
+
+                item.releasePointerCapture(
+                    event.pointerId
+                );
+
+            } catch (e) {}
+
+        }
+    );
+
+
+    item.addEventListener(
+        "pointercancel",
+        function() {
+
+            dragging = false;
+
+        }
+    );
+
+}
+
+
+/* ==========================
+   الضغط خارج النص
+========================== */
+
+canvasArea.addEventListener(
+    "pointerdown",
+    function(event) {
+
+        if (
+            event.target === formImage
+        ) {
+
+            document
+                .querySelectorAll(".textItem")
+                .forEach(el => {
+
+                    el.classList.remove(
+                        "selected"
+                    );
+
+                });
+
+            selectedText = null;
+
+        }
+
+    }
+);
+
+
+/* ==========================
+   حذف النصوص القديمة
+========================== */
+
+function clearTexts() {
+
+    document
+        .querySelectorAll(".textItem")
+        .forEach(item => {
+
+            item.remove();
+
+        });
+
+    selectedText = null;
+
+}
+
+
+/* ==========================
+   حفظ الصورة
+========================== */
+
+saveButton.addEventListener(
+    "click",
+    function() {
+
+        if (!imageLoaded) {
+
+            alert("اختر صورة أولاً.");
+
+            return;
+        }
+
 
         const canvas =
             document.createElement("canvas");
 
         canvas.width =
-            originalImage.naturalWidth;
+            formImage.naturalWidth;
 
         canvas.height =
-            originalImage.naturalHeight;
+            formImage.naturalHeight;
+
 
         const ctx =
             canvas.getContext("2d");
 
+
+        /*
+         * الصورة الأصلية.
+         */
+
         ctx.drawImage(
-            originalImage,
+            formImage,
             0,
-            0
+            0,
+            canvas.width,
+            canvas.height
         );
 
-        const imageData =
-            ctx.getImageData(
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
-
-        const data =
-            imageData.data;
 
         /*
-         * البحث عن الخطوط الأفقية
-         * الداكنة الطويلة.
+         * نسبة الصورة الأصلية
+         * إلى الصورة المعروضة.
          */
 
-        for (
-            let y = 0;
-            y < canvas.height;
-            y += 3
-        ) {
+        const scaleX =
+            formImage.naturalWidth /
+            formImage.offsetWidth;
 
-            let start = -1;
+        const scaleY =
+            formImage.naturalHeight /
+            formImage.offsetHeight;
 
-            for (
-                let x = 0;
-                x < canvas.width;
-                x++
-            ) {
-
-                const index =
-                    (y * canvas.width + x) * 4;
-
-                const r = data[index];
-                const g = data[index + 1];
-                const b = data[index + 2];
-
-                const dark =
-                    r < 130 &&
-                    g < 130 &&
-                    b < 130;
-
-                if (dark && start === -1) {
-
-                    start = x;
-
-                }
-
-                if (
-                    (!dark || x === canvas.width - 1) &&
-                    start !== -1
-                ) {
-
-                    const length =
-                        x - start;
-
-                    if (length > 120) {
-
-                        /*
-                         * الخط وحده لا يكفي
-                         * لاعتباره حقل تعبئة.
-                         *
-                         * نضعه في قائمة المرشحين
-                         * فقط إذا لم يكن مربع اختيار.
-                         */
-
-                        result.push({
-
-                            name: "حقل مكتشف",
-
-                            x: start,
-
-                            y: y - 18,
-
-                            width: length,
-
-                            height: 30
-
-                        });
-
-                    }
-
-                    start = -1;
-
-                }
-
-            }
-
-        }
-
-    } catch (e) {
-
-        console.log(e);
-
-    }
-
-    /*
-     * إزالة الحقول المتقاربة جداً.
-     */
-
-    const clean = [];
-
-    for (const item of result) {
-
-        const exists =
-            clean.some(x =>
-                Math.abs(x.x - item.x) < 30 &&
-                Math.abs(x.y - item.y) < 25
-            );
-
-        if (!exists) {
-
-            clean.push(item);
-
-        }
-
-    }
-
-    return clean.slice(0, 40);
-
-}
-
-
-/* =========================
-   رسم الحقول
-========================= */
-
-function drawDetectedFields(fields) {
-
-    clearFields();
-
-    const imageWidth =
-        formImage.naturalWidth;
-
-    const imageHeight =
-        formImage.naturalHeight;
-
-    fields.forEach((field, index) => {
 
         /*
-         * تجاهل أي شيء خارج الصورة.
+         * رسم جميع النصوص.
          */
 
-        if (field.x < 0) return;
-        if (field.y < 0) return;
+        document
+            .querySelectorAll(".textItem")
+            .forEach(item => {
+
+                const text =
+                    item.childNodes[0]
+                        ?.textContent || "";
+
+                const x =
+                    parseFloat(
+                        item.style.left
+                    ) * scaleX;
+
+                const y =
+                    parseFloat(
+                        item.style.top
+                    ) * scaleY;
+
+
+                /*
+                 * حجم الخط يتناسب
+                 * مع حجم الصورة الأصلية.
+                 */
+
+                const fontSize =
+                    22 * scaleX;
+
+
+                ctx.fillStyle =
+                    "#000000";
+
+                ctx.font =
+                    fontSize +
+                    "px Arial";
+
+                ctx.textBaseline =
+                    "top";
+
+                ctx.direction =
+                    "ltr";
+
+
+                /*
+                 * يدعم النص العربي والألماني
+                 * بشكل طبيعي.
+                 */
+
+                ctx.fillText(
+                    text,
+                    x + (4 * scaleX),
+                    y + (3 * scaleY)
+                );
+
+            });
+
+
+        /*
+         * إنشاء الصورة النهائية.
+         */
+
+        const link =
+            document.createElement("a");
+
+        link.download =
+            "filled-form.png";
+
+        link.href =
+            canvas.toDataURL(
+                "image/png"
+            );
+
+        link.click();
+
+
+        status.textContent =
+            "✅ تم حفظ الصورة النهائية.";
+
+    }
+);
+
+
+/* ==========================
+   إغلاق مربع الكتابة
+   عند الضغط خارج المستطيل
+========================== */
+
+document.addEventListener(
+    "pointerdown",
+    function(event) {
 
         if (
-            field.x >= imageWidth ||
-            field.y >= imageHeight
-        ) return;
+            writingBox.style.display === "flex" &&
+            !writingBox.contains(event.target) &&
+            event.target !== addTextButton
+        ) {
 
+            writingBox.style.display =
+                "none";
 
-        const wrapper =
-            document.createElement("div");
-
-        wrapper.className =
-            "detectedField";
-
-        wrapper.style.left =
-            field.x + "px";
-
-        wrapper.style.top =
-            field.y + "px";
-
-        wrapper.style.width =
-            field.width + "px";
-
-        wrapper.style.height =
-            field.height + "px";
-
-
-        const label =
-            document.createElement("div");
-
-        label.className =
-            "fieldLabel";
-
-        label.textContent =
-            field.name;
-
-        wrapper.appendChild(label);
-
-
-        const input =
-            document.createElement("input");
-
-        input.type = "text";
-
-        input.placeholder =
-            "اكتب هنا";
-
-        input.dataset.field =
-            field.name;
-
-        wrapper.appendChild(input);
-
-
-        formContainer.appendChild(wrapper);
-
-    });
-
-}
-
-
-/* =========================
-   حفظ النموذج
-========================= */
-
-saveButton.addEventListener("click", function() {
-
-    if (!originalImage) {
-
-        alert("لم يتم اختيار صورة.");
-
-        return;
+        }
 
     }
-
-
-    const canvas =
-        document.createElement("canvas");
-
-    canvas.width =
-        originalImage.naturalWidth;
-
-    canvas.height =
-        originalImage.naturalHeight;
-
-    const ctx =
-        canvas.getContext("2d");
-
-
-    /*
-     * أولاً نرسم الصورة الأصلية فقط.
-     */
-
-    ctx.drawImage(
-        originalImage,
-        0,
-        0
-    );
-
-
-    /*
-     * ثم نرسم النصوص التي كتبها المستخدم.
-     */
-
-    const fields =
-        formContainer.querySelectorAll(
-            ".detectedField"
-        );
-
-    fields.forEach(field => {
-
-        const input =
-            field.querySelector("input");
-
-        if (!input || !input.value) return;
-
-
-        const x =
-            parseFloat(field.style.left);
-
-        const y =
-            parseFloat(field.style.top);
-
-        const width =
-            parseFloat(field.style.width);
-
-        const height =
-            parseFloat(field.style.height);
-
-
-        ctx.fillStyle = "black";
-
-        ctx.font =
-            Math.max(
-                16,
-                height * 0.65
-            ) + "px Arial";
-
-        ctx.textBaseline =
-            "middle";
-
-        ctx.direction = "ltr";
-
-        ctx.fillText(
-            input.value,
-            x + 5,
-            y + height / 2,
-            width - 10
-        );
-
-    });
-
-
-    /*
-     * تنزيل الصورة النهائية.
-     */
-
-    const link =
-        document.createElement("a");
-
-    link.download =
-        "filled-form.png";
-
-    link.href =
-        canvas.toDataURL("image/png");
-
-    link.click();
-
-});
-
+);
 
 </script>
 
