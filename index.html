@@ -6,7 +6,6 @@
 
 <title>تعبئة النموذج</title>
 
-<!-- OCR لقياس حجم الكتابة الموجودة بالصورة -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
@@ -81,7 +80,6 @@ input[type="file"] {
     font-size: 14px;
 }
 
-
 /* =========================
    منطقة الصورة
 ========================= */
@@ -105,6 +103,43 @@ input[type="file"] {
     -webkit-user-drag: none;
 }
 
+/* =========================
+   أزرار تكبير وتصغير النص
+========================= */
+
+.sizeControl {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: #1976d2;
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 48px;
+    padding: 0;
+    z-index: 3000;
+    box-shadow: 0 3px 10px rgba(0,0,0,.25);
+}
+
+.sizeControl:active {
+    transform: translateY(-50%) scale(.92);
+}
+
+#decreaseSize {
+    right: 10px;
+}
+
+#increaseSize {
+    left: 10px;
+}
+
+.sizeControl:disabled {
+    opacity: .35;
+}
 
 /* =========================
    مربع الكتابة
@@ -112,66 +147,41 @@ input[type="file"] {
 
 #writingBox {
     position: fixed;
-
     left: 50%;
     top: 50%;
-
     transform: translate(-50%, -50%);
-
     width: min(90vw, 500px);
-
     background: white;
-
     border: 2px solid #1976d2;
-
     border-radius: 12px;
-
     padding: 8px;
-
     display: none;
-
     z-index: 5000;
-
     box-shadow: 0 5px 25px rgba(0,0,0,.3);
-
     direction: ltr;
 }
 
 #writingInput {
     width: calc(100% - 55px);
-
     min-height: 48px;
-
     border: none;
-
     outline: none;
-
     font-size: 18px;
-
     padding: 8px;
-
     resize: none;
-
     direction: auto;
 }
 
 #confirmText {
     width: 45px;
     height: 45px;
-
     background: #16803c;
-
     color: white;
-
     border-radius: 50%;
-
     font-size: 23px;
-
     font-weight: bold;
-
     padding: 0;
 }
-
 
 /* =========================
    النص الموجود فوق الصورة
@@ -179,28 +189,17 @@ input[type="file"] {
 
 .textItem {
     position: absolute;
-
     min-width: 30px;
     min-height: 30px;
-
     padding: 2px 4px;
-
     cursor: move;
-
     user-select: none;
-
     touch-action: none;
-
     color: #000;
-
     background: transparent;
-
     z-index: 20;
-
     white-space: pre-wrap;
-
     direction: auto;
-
     line-height: 1.15;
 }
 
@@ -211,24 +210,16 @@ input[type="file"] {
 
 .deleteText {
     position: absolute;
-
     top: -28px;
     right: -5px;
-
     background: #d32f2f;
     color: white;
-
     border: none;
-
     border-radius: 50%;
-
     width: 25px;
     height: 25px;
-
     font-size: 14px;
-
     display: none;
-
     padding: 0;
 }
 
@@ -236,26 +227,18 @@ input[type="file"] {
     display: block;
 }
 
-
 /* =========================
    التعليمات
 ========================= */
 
 .help {
     background: white;
-
     margin: 10px auto;
-
     padding: 10px;
-
     border-radius: 10px;
-
     max-width: 700px;
-
     text-align: center;
-
     color: #555;
-
     font-size: 14px;
 }
 </style>
@@ -263,24 +246,20 @@ input[type="file"] {
 
 <body>
 
-
 <div class="topbar">
     <h2>تعبئة النموذج</h2>
 </div>
-
 
 <div class="toolbar">
 
     <label class="uploadButton">
         📷 اختيار صورة
-
         <input
             type="file"
             id="imageInput"
             accept="image/*"
         >
     </label>
-
 
     <button
         class="addButton"
@@ -290,7 +269,6 @@ input[type="file"] {
         ✏️ إضافة كتابة
     </button>
 
-
     <button
         class="saveButton"
         id="saveButton"
@@ -299,18 +277,36 @@ input[type="file"] {
         💾 حفظ الصورة
     </button>
 
-
     <div id="status">
         اختر صورة للبدء
     </div>
 
 </div>
 
-
 <div class="help">
     اكتب النص ثم اضغط ✓، وبعدها اسحب الجملة إلى المكان الذي تريده.
+    استخدم + و − بجانب الصورة لتغيير حجم الجملة المحددة.
 </div>
 
+<!-- زر التكبير يسار الصورة -->
+<button
+    id="increaseSize"
+    class="sizeControl"
+    type="button"
+    aria-label="تكبير النص"
+>
+    +
+</button>
+
+<!-- زر التصغير يمين الصورة -->
+<button
+    id="decreaseSize"
+    class="sizeControl"
+    type="button"
+    aria-label="تصغير النص"
+>
+    −
+</button>
 
 <div class="workspace">
 
@@ -325,7 +321,6 @@ input[type="file"] {
 
 </div>
 
-
 <!-- =========================
      مستطيل الكتابة
 ========================= -->
@@ -338,7 +333,6 @@ input[type="file"] {
         rows="2"
     ></textarea>
 
-
     <button
         id="confirmText"
         type="button"
@@ -348,9 +342,7 @@ input[type="file"] {
 
 </div>
 
-
 <script>
-
 
 const imageInput =
     document.getElementById("imageInput");
@@ -379,6 +371,12 @@ const saveButton =
 const status =
     document.getElementById("status");
 
+const increaseSizeButton =
+    document.getElementById("increaseSize");
+
+const decreaseSizeButton =
+    document.getElementById("decreaseSize");
+
 
 let imageLoaded = false;
 
@@ -391,6 +389,7 @@ let textCounter = 0;
  * حجم الخط المكتشف من الصورة
  * بوحدة بكسل في الصورة الأصلية.
  */
+
 let detectedFontSize = 22;
 
 
@@ -398,6 +397,7 @@ let detectedFontSize = 22;
  * معامل عرض الصورة على الشاشة
  * مقارنة بالصورة الأصلية.
  */
+
 let displayScale = 1;
 
 
@@ -414,10 +414,8 @@ imageInput.addEventListener(
 
         if (!file) return;
 
-
         const reader =
             new FileReader();
-
 
         reader.onload =
             function(e) {
@@ -430,7 +428,6 @@ imageInput.addEventListener(
                         canvasArea.style.display =
                             "block";
 
-
                         /*
                          * جعل الصورة مناسبة للشاشة.
                          */
@@ -441,24 +438,18 @@ imageInput.addEventListener(
                                 formImage.naturalWidth
                             );
 
-
                         formImage.style.width =
                             maxWidth + "px";
-
 
                         formImage.style.height =
                             "auto";
 
-
                         updateDisplayScale();
-
 
                         clearTexts();
 
-
                         status.textContent =
                             "⏳ جاري قراءة حجم الخط الموجود في الصورة...";
-
 
                         /*
                          * قراءة الصورة وقياس
@@ -469,18 +460,15 @@ imageInput.addEventListener(
                             e.target.result
                         );
 
-
                         status.textContent =
                             "✅ تم تحليل حجم الخط. اضغط «إضافة كتابة».";
 
                     };
 
-
                 formImage.src =
                     e.target.result;
 
             };
-
 
         reader.readAsDataURL(file);
 
@@ -498,10 +486,11 @@ function updateDisplayScale() {
         !formImage.naturalWidth ||
         !formImage.offsetWidth
     ) {
+
         displayScale = 1;
+
         return;
     }
-
 
     displayScale =
         formImage.offsetWidth /
@@ -531,10 +520,8 @@ async function detectFontSize(imageSource) {
                 "deu+eng"
             );
 
-
         const words =
             result.data.words || [];
-
 
         /*
          * أخذ ارتفاع الكلمات التي
@@ -543,21 +530,17 @@ async function detectFontSize(imageSource) {
 
         const heights = [];
 
-
         for (const word of words) {
 
             if (!word.text) continue;
-
 
             const width =
                 word.bbox.x1 -
                 word.bbox.x0;
 
-
             const height =
                 word.bbox.y1 -
                 word.bbox.y0;
-
 
             /*
              * تجاهل النتائج غير المنطقية.
@@ -569,16 +552,9 @@ async function detectFontSize(imageSource) {
 
             if (width < 3) continue;
 
-
-            /*
-             * نتجنب الكلمات القصيرة جداً
-             * أو النتائج الغريبة.
-             */
-
             heights.push(height);
 
         }
-
 
         if (heights.length === 0) {
 
@@ -588,7 +564,6 @@ async function detectFontSize(imageSource) {
 
         }
 
-
         /*
          * ترتيب الأحجام.
          */
@@ -596,7 +571,6 @@ async function detectFontSize(imageSource) {
         heights.sort(
             (a,b) => a - b
         );
-
 
         /*
          * الوسيط Median أكثر استقراراً
@@ -608,9 +582,7 @@ async function detectFontSize(imageSource) {
                 heights.length / 2
             );
 
-
         let median;
-
 
         if (
             heights.length % 2 === 0
@@ -629,7 +601,6 @@ async function detectFontSize(imageSource) {
 
         }
 
-
         /*
          * ارتفاع bbox للكلمة ليس دائماً
          * نفس حجم CSS font.
@@ -639,7 +610,6 @@ async function detectFontSize(imageSource) {
 
         detectedFontSize =
             median * 1.05;
-
 
         /*
          * حدود أمان.
@@ -654,12 +624,10 @@ async function detectFontSize(imageSource) {
                 )
             );
 
-
         console.log(
             "Detected font size:",
             detectedFontSize
         );
-
 
     } catch (error) {
 
@@ -667,7 +635,6 @@ async function detectFontSize(imageSource) {
             "OCR error:",
             error
         );
-
 
         /*
          * إذا فشل OCR نستخدم
@@ -696,9 +663,7 @@ addTextButton.addEventListener(
             );
 
             return;
-
         }
-
 
         openWritingBox();
 
@@ -733,18 +698,14 @@ confirmText.addEventListener(
         const text =
             writingInput.value.trim();
 
-
         if (!text) {
 
             writingInput.focus();
 
             return;
-
         }
 
-
         createTextItem(text);
-
 
         writingBox.style.display =
             "none";
@@ -785,14 +746,11 @@ function createTextItem(text) {
     const item =
         document.createElement("div");
 
-
     item.className =
         "textItem";
 
-
     item.dataset.id =
         ++textCounter;
-
 
     /*
      * نخزن النص بشكل منفصل حتى
@@ -802,17 +760,21 @@ function createTextItem(text) {
     const textNode =
         document.createTextNode(text);
 
-
     item.appendChild(textNode);
 
+    /*
+     * نخزن حجم الخط الأساسي.
+     */
+
+    item.dataset.baseFontSize =
+        detectedFontSize;
 
     /*
-     * حجم الخط الطبيعي للصورة الأصلية.
+     * حجم الخط الحالي.
      */
 
     item.dataset.fontSize =
         detectedFontSize;
-
 
     /*
      * تحويل الحجم إلى حجم مناسب
@@ -825,7 +787,6 @@ function createTextItem(text) {
             displayScale
         ) + "px";
 
-
     /*
      * زر الحذف.
      */
@@ -833,18 +794,14 @@ function createTextItem(text) {
     const deleteButton =
         document.createElement("button");
 
-
     deleteButton.className =
         "deleteText";
-
 
     deleteButton.textContent =
         "×";
 
-
     deleteButton.type =
         "button";
-
 
     deleteButton.addEventListener(
         "pointerdown",
@@ -854,7 +811,6 @@ function createTextItem(text) {
 
         }
     );
-
 
     deleteButton.addEventListener(
         "click",
@@ -866,17 +822,16 @@ function createTextItem(text) {
 
             selectedText = null;
 
+            updateSizeButtons();
+
         }
     );
-
 
     item.appendChild(
         deleteButton
     );
 
-
     canvasArea.appendChild(item);
-
 
     /*
      * مكان البداية.
@@ -885,13 +840,10 @@ function createTextItem(text) {
     item.style.left =
         "20px";
 
-
     item.style.top =
         "20px";
 
-
     enableDragging(item);
-
 
     selectText(item);
 
@@ -916,16 +868,114 @@ function selectText(item) {
             }
         );
 
-
     item.classList.add(
         "selected"
     );
 
-
     selectedText =
         item;
 
+    updateSizeButtons();
+
 }
+
+
+/* ==================================================
+   تكبير وتصغير النص المحدد
+================================================== */
+
+function updateSizeButtons() {
+
+    const disabled =
+        !selectedText;
+
+    increaseSizeButton.disabled =
+        disabled;
+
+    decreaseSizeButton.disabled =
+        disabled;
+
+}
+
+
+function changeSelectedFontSize(multiplier) {
+
+    if (!selectedText) return;
+
+    const currentSize =
+        parseFloat(
+            selectedText.dataset.fontSize
+        ) || detectedFontSize;
+
+    let newSize =
+        currentSize * multiplier;
+
+    /*
+     * حدود الحجم.
+     */
+
+    newSize =
+        Math.max(
+            6,
+            Math.min(
+                newSize,
+                200
+            )
+        );
+
+    selectedText.dataset.fontSize =
+        newSize;
+
+    selectedText.style.fontSize =
+        (
+            newSize *
+            displayScale
+        ) + "px";
+
+}
+
+
+/* ==================================================
+   زر +
+================================================== */
+
+increaseSizeButton.addEventListener(
+    "click",
+    function(event) {
+
+        event.preventDefault();
+
+        event.stopPropagation();
+
+        changeSelectedFontSize(
+            1.10
+        );
+
+    }
+);
+
+
+/* ==================================================
+   زر -
+================================================== */
+
+decreaseSizeButton.addEventListener(
+    "click",
+    function(event) {
+
+        event.preventDefault();
+
+        event.stopPropagation();
+
+        changeSelectedFontSize(
+            0.90
+        );
+
+    }
+);
+
+
+updateSizeButtons();
 
 
 /* ==================================================
@@ -944,7 +994,6 @@ function enableDragging(item) {
 
     let originalTop = 0;
 
-
     item.addEventListener(
         "pointerdown",
         function(event) {
@@ -959,35 +1008,27 @@ function enableDragging(item) {
 
             }
 
-
             event.preventDefault();
-
 
             selectText(item);
 
-
             dragging = true;
-
 
             startX =
                 event.clientX;
 
-
             startY =
                 event.clientY;
-
 
             originalLeft =
                 parseFloat(
                     item.style.left
                 ) || 0;
 
-
             originalTop =
                 parseFloat(
                     item.style.top
                 ) || 0;
-
 
             item.setPointerCapture(
                 event.pointerId
@@ -1003,34 +1044,27 @@ function enableDragging(item) {
 
             if (!dragging) return;
 
-
             const dx =
                 event.clientX -
                 startX;
-
 
             const dy =
                 event.clientY -
                 startY;
 
-
             let newLeft =
                 originalLeft + dx;
 
-
             let newTop =
                 originalTop + dy;
-
 
             const maxLeft =
                 formImage.offsetWidth -
                 item.offsetWidth;
 
-
             const maxTop =
                 formImage.offsetHeight -
                 item.offsetHeight;
-
 
             newLeft =
                 Math.max(
@@ -1044,7 +1078,6 @@ function enableDragging(item) {
                     )
                 );
 
-
             newTop =
                 Math.max(
                     0,
@@ -1057,10 +1090,8 @@ function enableDragging(item) {
                     )
                 );
 
-
             item.style.left =
                 newLeft + "px";
-
 
             item.style.top =
                 newTop + "px";
@@ -1074,7 +1105,6 @@ function enableDragging(item) {
         function(event) {
 
             dragging = false;
-
 
             try {
 
@@ -1116,8 +1146,9 @@ function clearTexts() {
             }
         );
 
-
     selectedText = null;
+
+    updateSizeButtons();
 
 }
 
@@ -1140,22 +1171,17 @@ saveButton.addEventListener(
 
         }
 
-
         const canvas =
             document.createElement("canvas");
-
 
         canvas.width =
             formImage.naturalWidth;
 
-
         canvas.height =
             formImage.naturalHeight;
 
-
         const ctx =
             canvas.getContext("2d");
-
 
         /*
          * رسم الصورة الأصلية.
@@ -1169,7 +1195,6 @@ saveButton.addEventListener(
             canvas.height
         );
 
-
         /*
          * معامل التحويل من الشاشة
          * إلى الصورة الأصلية.
@@ -1179,11 +1204,9 @@ saveButton.addEventListener(
             formImage.naturalWidth /
             formImage.offsetWidth;
 
-
         const scaleY =
             formImage.naturalHeight /
             formImage.offsetHeight;
-
 
         /*
          * رسم النصوص.
@@ -1202,9 +1225,7 @@ saveButton.addEventListener(
                         item.childNodes[0]
                             ?.textContent || "";
 
-
                     if (!text) return;
-
 
                     const x =
                         (
@@ -1213,7 +1234,6 @@ saveButton.addEventListener(
                             ) || 0
                         ) * scaleX;
 
-
                     const y =
                         (
                             parseFloat(
@@ -1221,10 +1241,9 @@ saveButton.addEventListener(
                             ) || 0
                         ) * scaleY;
 
-
                     /*
-                     * نستخدم حجم الخط الذي
-                     * اكتشفناه من الصورة الأصلية.
+                     * نستخدم حجم الخط الحالي
+                     * بعد التكبير أو التصغير.
                      */
 
                     const fontSize =
@@ -1232,23 +1251,18 @@ saveButton.addEventListener(
                             item.dataset.fontSize
                         ) || detectedFontSize;
 
-
                     ctx.fillStyle =
                         "#000000";
-
 
                     ctx.font =
                         fontSize +
                         "px Arial";
 
-
                     ctx.textBaseline =
                         "top";
 
-
                     ctx.direction =
                         "ltr";
-
 
                     ctx.fillText(
                         text,
@@ -1259,7 +1273,6 @@ saveButton.addEventListener(
                 }
             );
 
-
         /*
          * إنشاء الصورة النهائية.
          */
@@ -1267,19 +1280,15 @@ saveButton.addEventListener(
         const link =
             document.createElement("a");
 
-
         link.download =
             "filled-form.png";
-
 
         link.href =
             canvas.toDataURL(
                 "image/png"
             );
 
-
         link.click();
-
 
         status.textContent =
             "✅ تم حفظ الصورة بالحجم الصحيح للنص.";
@@ -1321,9 +1330,7 @@ window.addEventListener(
 
         if (!imageLoaded) return;
 
-
         updateDisplayScale();
-
 
         /*
          * تحديث حجم النصوص الموجودة
@@ -1339,7 +1346,6 @@ window.addEventListener(
                         parseFloat(
                             item.dataset.fontSize
                         ) || detectedFontSize;
-
 
                     item.style.fontSize =
                         (
