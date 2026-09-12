@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PETROGLA v1.1</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#18212b;font-family:Arial,Tahoma,sans-serif}
+header{background:#172733;color:#fff;padding:18px}main{max-width:1180px;margin:auto;padding:16px}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #0001}
+h1,h2{margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label{font-weight:700;display:block}input,select{display:block;width:100%;margin-top:6px;padding:10px;border:1px solid #cbd3da;border-radius:7px;font-size:15px;background:#fff}
+button{margin-top:15px;padding:13px 22px;border:0;border-radius:8px;background:#1769aa;color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+button:disabled{opacity:.65;cursor:wait}.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.k{background:#eef3f7;border-radius:8px;padding:12px}.v{font-size:18px;font-weight:700;margin-top:5px}
+.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px;min-width:1050px}th,td{padding:7px;border-bottom:1px solid #ddd;text-align:center}
+th{font-weight:700}.notice,.status{border-radius:8px;padding:12px;line-height:1.7}.notice{background:#fff4d5}.status{margin-top:12px;background:#f0f2f4;font-weight:700}.hidden{display:none}
+</style>
+</head>
+<body>
+<header><h1>PETROGLA v1.1</h1><div>Multiphase Flow — Beggs & Brill Prototype</div></header>
+<main>
+<section class="card">
+<h2>مدخلات البئر والموائع — Well & Fluid Inputs</h2>
+<div class="grid">
+<label>ضغط المكمن — Reservoir Pressure (psi)<input id="pr" type="number" value="3500"></label>
+<label>درجة حرارة المكمن — Reservoir Temperature (°F)<input id="tr" type="number" value="210"></label>
+<label>ضغط رأس البئر — WHP (psi)<input id="whp" type="number" value="500"></label>
+<label>درجة حرارة رأس البئر — WHT (°F)<input id="wht" type="number" value="90"></label>
+<label>معدل النفط — Oil Rate Qo (STB/d)<input id="qo" type="number" value="1000"></label>
+<label>معدل الماء — Water Rate Qw (STB/d)<input id="qw" type="number" value="200"></label>
+<label>معدل الغاز — Gas Rate Qg (Mscf/d)<input id="qg" type="number" value="1500"></label>
+<label>القطر الداخلي للأنبوب — Tubing ID (in)<input id="tid" type="number" value="2.875"></label>
+<label>عمق البئر — Well Depth (ft)<input id="depth" type="number" value="8000"></label>
+<label>الكثافة النوعية للنفط — Oil API Gravity<input id="api" type="number" value="35"></label>
+<label>الكثافة النوعية للغاز — Gas SG<input id="gsg" type="number" value="0.70"></label>
+<label>الكثافة النوعية للماء — Water SG<input id="wsg" type="number" value="1.02"></label>
+<label>لزوجة الغاز — Gas Viscosity (cP)<input id="mug" type="number" value="0.02"></label>
+<label>التوتر السطحي — Surface Tension (dyn/cm)<input id="st" type="number" value="25"></label>
+</div>
+<div class="card" style="margin-top:14px;background:#f8fafc">
+<h3>تحليل الإنتاج — IPR / VLP / Nodal Analysis</h3>
+<div class="grid">
+<label>ضغط المكمن المستخدم — Reservoir Pressure (psi)<input id="iprPr" type="number" value="3500"></label>
+<label>ضغط الفقاع — Bubble Point (psi)<input id="iprPb" type="number" value="2500"></label>
+<label>ضغط قاع البئر عند الاختبار — Test BHP (psi)<input id="testPwf" type="number" value="2500"></label>
+<label>معدل النفط عند الاختبار — Test Oil Rate (STB/d)<input id="testQo" type="number" value="1000"></label>
+<label>معامل PI — Productivity Index (STB/d/psi)<input id="pi" type="number" value="0"></label>
+<label>الخيار — IPR Model<select id="iprModel"><option value="vogel">Vogel</option><option value="linear">Linear PI</option></select></label>
+</div></div>
+<button id="runBtn" type="button">تشغيل المحاكاة — Run Simulation</button>
+<div id="status" class="status">جاهز للتشغيل — أدخل البيانات ثم اضغط زر تشغيل المحاكاة.</div>
+</section>
+
+<section id="results" class="hidden">
+<div class="card"><h2>PVT — خواص الموائع</h2><div id="pvt" class="kpi"></div></div>
+<div class="card"><h2>Beggs & Brill — الجريان متعدد الأطوار</h2><div id="flow" class="kpi"></div></div>
+<div class="card"><h2>Pressure Profile — توزيع الضغط</h2><div id="profile" class="tablewrap"></div></div><div class="card"><h2>IPR / VLP / Nodal Analysis</h2><div id="nodal" class="kpi"></div></div>
+<div class="card"><h2>IPR / VLP Curve — منحنيات الإنتاج</h2>
+<canvas id="nodalChart" width="1000" height="430" style="width:100%;max-width:100%;background:#fff;border:1px solid #ddd;border-radius:8px"></canvas>
+</div>
+<div class="card"><h2>Production Curve — منحنى الإنتاج</h2><div id="nodalTable" class="tablewrap"></div></div>
+
+<div class="card"><div class="notice"><b>تنبيه هندسي:</b> Beggs & Brill هنا مُطبق كـ Prototype تعليمي/تطويري، مع خطوة ضغط تفاضلية وحساب holdup وfriction. يجب التحقق من المعادلات مقابل مراجع وtest cases منشورة قبل أي استخدام تشغيلي.</div></div>
+</section>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const val=id=>Number($(id).value);
+const fmt=(x,d=1)=>Number.isFinite(x)?x.toFixed(d):'—';
+
+function oilSG(api){return 141.5/(api+131.5)}
+function rs(P,T,api,g){let sg=oilSG(api);return Math.max(0,g*(Math.max(P,1)/(18.2+1.4*sg))**1.2048*10**(0.0125*api-0.00091*T))}
+function bo(P,T,api,g){let r=rs(P,T,api,g),sg=oilSG(api);return 0.9759+0.00012*r*Math.sqrt(g/sg)+0.00001*(T-60)}
+function z(P,T,g){return Math.min(1.2,Math.max(.65,.85+.00003*(T-100)-.000015*(P-1000)+.04*(g-.7)))}
+function bg(P,T,g){return .005035*(T+460)*z(P,T,g)/Math.max(P,1)}
+function muo(P,T,api){return Math.max(.3,3*Math.exp(-.004*(T-80))*(1+.00006*Math.max(P-500,0)))}
+
+/* Beggs & Brill inclination-free vertical prototype.
+   Uses flow pattern boundaries, holdup correlation and friction multiplier. */
+function bbHoldup(yL,Fr,LN){
+  const L1=.010*Math.pow(yL,-1.0)*Math.pow(LN,.2);
+  const L2=.845*Math.pow(yL,-.5351)*Math.pow(LN,.0173);
+  const L3=.5351*Math.pow(yL,-.582)*Math.pow(LN,.0609);
+  const L4=.0609*Math.pow(yL,-.0609)*Math.pow(LN,.0609);
+  let pattern = Fr< L1 ? 'Segregated' : Fr< L2 ? 'Transition' : Fr< L3 ? 'Intermittent' : Fr< L4 ? 'Distributed' : 'Distributed';
+  /* Stable, bounded B&B-style liquid holdup relation */
+  let C0=pattern==='Segregated'?0.98:pattern==='Intermittent'?1.20:pattern==='Transition'?1.05:1.00;
+  let hl=Math.max(yL, Math.min(.99, C0*yL/(1+0.12*Math.sqrt(Math.max(Fr,.0001)))));
+  return {hl,pattern,L1,L2,L3,L4};
+}
+function segment(P,T,inp,dz){
+ const api=inp.api,g=inp.gsg,wsg=inp.wsg,qo=inp.qo,qw=inp.qw,qg=inp.qg,D=inp.tid/12;
+ const B=bo(P,T,api,g), Bg=bg(P,T,g), area=Math.PI*D*D/4;
+ const ql=(qo*B+qw)*5.615/86400, qgf=qg*1000*Bg/86400;
+ const vl=ql/area, vg=qgf/area, vm=vl+vg, yL=vm?vl/vm:1;
+ const Nfr=Math.max(.000001,vm*vm/(32.174*D));
+ const rhoL=62.4*((qo*oilSG(api)*B+qw*wsg)/Math.max(qo*B+qw,.000001));
+ const rhoG=(28.97*g*P)/(10.73*(T+460)*z(P,T,g));
+ const bb=bbHoldup(yL,Nfr,Math.max(.0001,(P/(T+460))*D));
+ const hl=bb.hl, rho=hl*rhoL+(1-hl)*rhoG;
+ const mu=muo(P,T,api),Re=Math.max(1,rho*vm*D/(mu*.000672));
+ const fNS=.3164/Re**.25;
+ const corr=Math.max(.5,Math.min(5,1+1.8*Math.max(0,1-hl)));
+ const fTP=fNS*corr;
+ const hydro=rho/144*dz;
+ const friction=fTP*(dz/D)*rho*vm*vm/(2*32.174)/144;
+ const acceleration=.05*rho*vm*vm/(2*32.174)/144;
+ return {dp:hydro+friction+acceleration,hydro,friction,acceleration,hl,gvf:1-hl,rho,Re,vl,vg,vm,pattern:bb.pattern, fTP};
+}
+function run(){
+ const btn=$('runBtn');btn.disabled=true;
+ try{
+  const inp={pr:val('pr'),tr:val('tr'),whp:val('whp'),wht:val('wht'),qo:val('qo'),qw:val('qw'),qg:val('qg'),tid:val('tid'),depth:val('depth'),api:val('api'),gsg:val('gsg'),wsg:val('wsg'),mug:val('mug'),st:val('st')};
+  if(Object.values(inp).some(x=>!Number.isFinite(x))||inp.tid<=0||inp.depth<=0||inp.qo<0||inp.qw<0||inp.qg<0||inp.gsg<=0||inp.wsg<=0||inp.api<=0) throw new Error('يرجى التأكد من صحة جميع المدخلات.');
+  const N=80,dz=inp.depth/N;let P=inp.whp,T=inp.wht,H=0,F=0,A=0,rows=[];
+  for(let i=0;i<=N;i++){
+   const s=segment(P,T,inp,dz);
+   if(i>0){P+=s.dp;H+=s.hydro;F+=s.friction;A+=s.acceleration}
+   rows.push({d:i*dz,p:P,t:T,rs:rs(P,T,inp.api,inp.gsg),bo:bo(P,T,inp.api,inp.gsg),...s,grad:s.dp/dz});
+   T=inp.wht+(inp.tr-inp.wht)*(i/N);
+  }
+  const end=rows[N],bhp=P,wc=inp.qw/(inp.qo+inp.qw)*100,gor=inp.qg*1000/Math.max(inp.qo,1);
+  const regime=end.pattern+' — Beggs & Brill';
+  $('pvt').innerHTML=[
+   ['الجاذبية النوعية للنفط — Oil Gravity',fmt(oilSG(inp.api),3)+' SG'],
+   ['نقطة الفقاع — Bubble Point (Pb)',fmt(18.2*Math.pow(Math.max(rs(inp.pr,inp.tr,inp.api,inp.gsg)/(inp.gsg*10**(0.0125*inp.api-0.00091*inp.tr)),1e-12),.83),0)+' psi'],
+   ['Solution GOR (Rs)',fmt(end.rs,1)+' scf/STB'],['Oil FVF (Bo)',fmt(end.bo,4)+' rb/STB'],
+   ['Gas FVF (Bg)',fmt(bg(bhp,end.t,inp.gsg),6)+' rb/scf'],['Oil Viscosity (μo)',fmt(muo(bhp,end.t,inp.api),2)+' cP']
+  ].map(x=>`<div class="k"><div>${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+  $('flow').innerHTML=[
+   ['قطع الماء — Water Cut',fmt(wc,2)+' %'],['GOR',fmt(gor,0)+' scf/STB'],
+   ['احتجاز السائل — Liquid Holdup',fmt(end.hl*100,1)+' %'],['Gas Volume Fraction',fmt(end.gvf*100,1)+' %'],
+   ['كثافة الخليط — Mixture Density',fmt(end.rho,1)+' lb/ft³'],['Reynolds Number',fmt(end.Re,0)],
+   ['Hydrostatic Pressure Drop',fmt(H,1)+' psi'],['Friction Pressure Drop',fmt(F,1)+' psi'],
+   ['Acceleration Pressure Drop',fmt(A,2)+' psi'],['Total Pressure Drop',fmt(H+F+A,1)+' psi'],
+   ['BHP',fmt(bhp,1)+' psi'],['Flow Regime',regime]
+  ].map(x=>`<div class="k"><div>${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+  let h='<table><tr><th>Depth (ft)</th><th>Pressure (psi)</th><th>Temperature (°F)</th><th>Rs</th><th>Bo</th><th>Liquid Holdup</th><th>Gas Fraction</th><th>Mixture Density</th><th>Re</th><th>Pressure Gradient</th><th>Flow Pattern</th></tr>';
+  rows.forEach(x=>h+=`<tr><td>${fmt(x.d,0)}</td><td>${fmt(x.p,1)}</td><td>${fmt(x.t,1)}</td><td>${fmt(x.rs,1)}</td><td>${fmt(x.bo,4)}</td><td>${fmt(x.hl*100,1)}%</td><td>${fmt(x.gvf*100,1)}%</td><td>${fmt(x.rho,1)}</td><td>${fmt(x.Re,0)}</td><td>${fmt(x.grad,4)}</td><td>${x.pattern}</td></tr>`);
+  $('profile').innerHTML=h+'</table>';
+
+  // IPR/VLP prototype: generate inflow and outflow curves and locate their intersection.
+  const iprPr=val('iprPr'), iprPb=val('iprPb'), testPwf=val('testPwf'), testQo=val('testQo'), piInput=val('pi');
+  if(![iprPr,iprPb,testPwf,testQo,piInput].every(Number.isFinite) || iprPr<=0 || iprPb<0 || testPwf<0 || testQo<0)
+    throw new Error('يرجى التأكد من مدخلات IPR / VLP.');
+  let PI=piInput;
+  if(PI<=0 && iprPr>testPwf) PI=testQo/(iprPr-testPwf);
+  if(PI<=0) throw new Error('لا يمكن حساب Productivity Index. اجعل Reservoir Pressure أكبر من Test BHP أو أدخل PI صحيحًا.');
+  const nodal=[];
+  for(let j=0;j<=20;j++){
+    const pwf=iprPr*j/20;
+    let qin;
+    if($('iprModel').value==='vogel' && iprPb>0){
+      const qmax=testQo/Math.max(1-(testPwf/iprPr)**2,0.05);
+      qin=pwf<iprPb ? qmax*(1-0.2*(pwf/iprPr)-0.8*(pwf/iprPr)**2) : qmax*(1-0.2*(iprPb/iprPr)-0.8*(iprPb/iprPr)**2) + PI*(iprPb-pwf);
+      qin=Math.max(0,qin);
+    } else qin=Math.max(0,PI*(iprPr-pwf));
+    const vlp=Math.max(0,Math.min(inp.qo+inp.qw+inp.qg, (pwf-whp)*0.55));
+    nodal.push({pwf,qin,vlp});
+  }
+  let best=nodal[0];
+  for(const n of nodal){if(Math.abs(n.qin-n.vlp)<Math.abs(best.qin-best.vlp))best=n;}
+  const qNode=Math.max(0,best.qin), pwfNode=best.pwf;
+  $('nodal').innerHTML=[
+    ['Productivity Index — PI',fmt(PI,3)+' STB/d/psi'],
+    ['IPR Model', $('iprModel').value==='vogel'?'Vogel':'Linear PI'],
+    ['Nodal BHP — Pwf',fmt(pwfNode,1)+' psi'],
+    ['Nodal Oil Rate — Qo',fmt(qNode,1)+' STB/d'],
+    ['VLP/Outflow at Node',fmt(best.vlp,1)+' STB/d'],
+    ['IPR − VLP',fmt(best.qin-best.vlp,1)+' STB/d']
+  ].map(x=>`<div class="k"><div>${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+  let nh='<table><tr><th>Pwf (psi)</th><th>IPR Oil Rate (STB/d)</th><th>VLP/Outflow (STB/d)</th><th>Difference</th></tr>';
+  nodal.forEach(n=>nh+=`<tr><td>${fmt(n.pwf,1)}</td><td>${fmt(n.qin,1)}</td><td>${fmt(n.vlp,1)}</td><td>${fmt(n.qin-n.vlp,1)}</td></tr>`);
+  $('nodalTable').innerHTML=nh+'</table>';
+  // Draw IPR/VLP chart without external libraries.
+  const canvas=$('nodalChart'),ctx=canvas.getContext('2d');
+  const W=canvas.width,Hc=canvas.height; ctx.clearRect(0,0,W,Hc);
+  const pad={l:70,r:25,t:25,b:55}, iw=W-pad.l-pad.r, ih=Hc-pad.t-pad.b;
+  const maxQ=Math.max(1,...nodal.map(n=>n.qin),...nodal.map(n=>n.vlp))*1.1, maxP=iprPr;
+  const X=q=>pad.l+(q/maxQ)*iw, Y=p=>pad.t+(1-p/maxP)*ih;
+  ctx.strokeStyle='#888';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,Hc-pad.b);ctx.lineTo(W-pad.r,Hc-pad.b);ctx.stroke();
+  ctx.fillStyle='#18212b';ctx.font='14px Arial';
+  ctx.fillText('Oil Rate Qo (STB/d)',W/2-60,Hc-15);ctx.save();ctx.translate(18,Hc/2+60);ctx.rotate(-Math.PI/2);ctx.fillText('Pwf (psi)',0,0);ctx.restore();
+  ctx.beginPath();nodal.forEach((n,i)=>{const x=X(n.qin),y=Y(n.pwf);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
+  ctx.beginPath();nodal.forEach((n,i)=>{const x=X(n.vlp),y=Y(n.pwf);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
+  ctx.fillStyle='#18212b';ctx.fillText('IPR',pad.l+10,pad.t+15);ctx.fillText('VLP / Outflow',pad.l+70,pad.t+15);
+  ctx.beginPath();ctx.arc(X(qNode),Y(pwfNode),6,0,Math.PI*2);ctx.fill();
+  ctx.fillText('Nodal Point',X(qNode)+10,Y(pwfNode)-10);
+
+  $('results').classList.remove('hidden');
+  $('status').textContent='تم تشغيل المحاكاة بنجاح — Beggs & Brill Prototype.';
+ }catch(e){console.error(e);$('results').classList.add('hidden');$('status').textContent='خطأ في المحاكاة: '+(e.message||'تعذر حساب النتائج.');}
+ finally{btn.disabled=false}
+}
+$('runBtn').addEventListener('click',run);
+</script>
+</body></html>
